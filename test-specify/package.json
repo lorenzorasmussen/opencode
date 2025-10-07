@@ -1,0 +1,9 @@
+{
+  "name": "test-app",
+  "version": "1.0.0",
+  "scripts": {
+    "docs:generate": "specify generate",
+    "docs:validate": "specify validate",
+    "docs:serve": "npx @redocly/cli preview-docs specs/openapi.json"
+  }
+}

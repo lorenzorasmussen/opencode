@@ -19,6 +19,7 @@ import { McpCommand } from "./cli/cmd/mcp"
 import { GithubCommand } from "./cli/cmd/github"
 import { ExportCommand } from "./cli/cmd/export"
 import { AttachCommand } from "./cli/cmd/attach"
+import { SpecifyCommand } from "./cli/cmd/specify"
 
 const cancel = new AbortController()
 
@@ -78,6 +79,7 @@ const cli = yargs(hideBin(process.argv))
   .command(UpgradeCommand)
   .command(ServeCommand)
   .command(ModelsCommand)
+  .command(SpecifyCommand)
   .command(StatsCommand)
   .command(ExportCommand)
   .command(GithubCommand)

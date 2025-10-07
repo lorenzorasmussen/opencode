@@ -1,0 +1,189 @@
+{
+  "version": "2.0",
+  "orchestrator": {
+    "name": "OpenCode Multi-Model Orchestrator",
+    "max_concurrent_tasks": 8,
+    "task_timeout_seconds": 600,
+    "quality_threshold": 0.85,
+    "retry_attempts": 2,
+    "enable_human_review": true,
+    "logging_level": "INFO"
+  },
+  "models": {
+    "claude-3.5-sonnet": {
+      "provider": "anthropic",
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "capabilities": [
+        "code_generation",
+        "code_review",
+        "documentation",
+        "refactoring",
+        "planning"
+      ],
+      "performance_scores": {
+        "code_generation": 0.92,
+        "code_review": 0.89,
+        "documentation": 0.94,
+        "refactoring": 0.87,
+        "planning": 0.85
+      },
+      "context_window": 200000,
+      "cost_per_token": 1e-05,
+      "max_tokens_per_request": 4000,
+      "temperature": 0.1,
+      "enabled": true
+    },
+    "gpt-4o": {
+      "provider": "openai",
+      "api_key_env": "OPENAI_API_KEY",
+      "capabilities": [
+        "code_generation",
+        "code_review",
+        "testing",
+        "debugging",
+        "research"
+      ],
+      "performance_scores": {
+        "code_generation": 0.88,
+        "code_review": 0.85,
+        "testing": 0.9,
+        "debugging": 0.89,
+        "research": 0.92
+      },
+      "context_window": 128000,
+      "cost_per_token": 3e-05,
+      "max_tokens_per_request": 4000,
+      "temperature": 0.2,
+      "enabled": true
+    },
+    "deepseek-coder": {
+      "provider": "deepseek",
+      "api_key_env": "DEEPSEEK_API_KEY",
+      "capabilities": [
+        "code_generation",
+        "debugging",
+        "optimization",
+        "refactoring"
+      ],
+      "performance_scores": {
+        "code_generation": 0.95,
+        "debugging": 0.91,
+        "optimization": 0.93,
+        "refactoring": 0.88
+      },
+      "context_window": 64000,
+      "cost_per_token": 5e-06,
+      "max_tokens_per_request": 2000,
+      "temperature": 0.0,
+      "enabled": true
+    },
+    "codellama-34b": {
+      "provider": "local",
+      "model_path": "/path/to/codellama/model",
+      "capabilities": [
+        "code_generation",
+        "debugging",
+        "code_review"
+      ],
+      "performance_scores": {
+        "code_generation": 0.82,
+        "debugging": 0.78,
+        "code_review": 0.75
+      },
+      "context_window": 16000,
+      "cost_per_token": 0.0,
+      "max_tokens_per_request": 1500,
+      "temperature": 0.1,
+      "enabled": false,
+      "gpu_required": true,
+      "memory_gb_required": 24
+    }
+  },
+  "task_assignment": {
+    "algorithm": "weighted_scoring",
+    "weights": {
+      "capability_match": 0.4,
+      "performance_score": 0.3,
+      "cost_efficiency": 0.2,
+      "speed_requirement": 0.1
+    },
+    "load_balancing": true,
+    "prefer_specialized_models": true,
+    "fallback_enabled": true
+  },
+  "feedback_system": {
+    "enable_cross_validation": true,
+    "quality_metrics": [
+      "correctness",
+      "completeness",
+      "maintainability",
+      "performance",
+      "security"
+    ],
+    "review_triggers": {
+      "quality_below_threshold": true,
+      "high_priority_tasks": true,
+      "security_related": true,
+      "performance_critical": true
+    },
+    "learning_enabled": true,
+    "feedback_storage": "feedback_history.json"
+  },
+  "project_templates": {
+    "web_application": {
+      "phases": [
+        "requirements_analysis",
+        "architecture_design",
+        "backend_implementation",
+        "frontend_implementation",
+        "testing",
+        "deployment"
+      ],
+      "default_models": {
+        "planning": "claude-3.5-sonnet",
+        "backend_coding": "deepseek-coder",
+        "frontend_coding": "gpt-4o",
+        "testing": "gpt-4o",
+        "review": "claude-3.5-sonnet"
+      }
+    },
+    "api_service": {
+      "phases": [
+        "api_design",
+        "implementation",
+        "testing",
+        "documentation",
+        "deployment"
+      ],
+      "default_models": {
+        "design": "claude-3.5-sonnet",
+        "implementation": "deepseek-coder",
+        "testing": "gpt-4o",
+        "documentation": "claude-3.5-sonnet"
+      }
+    }
+  },
+  "integrations": {
+    "version_control": {
+      "enabled": true,
+      "provider": "git",
+      "auto_commit": true,
+      "commit_message_template": "[AI] {task_name}: {brief_description}"
+    },
+    "cicd": {
+      "enabled": false,
+      "provider": "github_actions",
+      "trigger_on_completion": true
+    },
+    "monitoring": {
+      "enabled": true,
+      "metrics": [
+        "task_completion_time",
+        "model_performance",
+        "cost_per_task",
+        "quality_scores"
+      ],
+      "export_format": "json"
+    }
+  }
+}

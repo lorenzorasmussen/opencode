@@ -1,12 +1,6 @@
-commit and push
+---
+description: Commit changes with message
+agent: build
+---
 
-make sure it includes a prefix like
-docs:
-tui:
-core:
-ci:
-ignore:
-wip:
-
-prefer to explain WHY something was done from an end user perspective instead of
-WHAT was done.
+Commit staged changes with a message. Use git tool to commit.

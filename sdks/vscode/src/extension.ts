@@ -58,7 +58,7 @@ export function activate(context: vscode.ExtensionContext) {
     })
 
     terminal.show()
-    terminal.sendText(`opencode --port ${port}`)
+    terminal.sendText(`opencode tui --port ${port}`)
 
     const fileRef = getActiveFile()
     if (!fileRef) return
