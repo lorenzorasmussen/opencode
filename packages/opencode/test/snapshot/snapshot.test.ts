@@ -1,5 +1,6 @@
 import { test, expect } from "bun:test"
 import { $ } from "bun"
+import fs from "fs/promises"
 import { Snapshot } from "../../src/snapshot"
 import { Instance } from "../../src/project/instance"
 import { tmpdir } from "../fixture/fixture"
@@ -25,6 +26,7 @@ async function bootstrap() {
 
 test("tracks deleted files correctly", async () => {
   await using tmp = await bootstrap()
+  const resolvedPath = await fs.realpath(tmp.path)
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
@@ -33,7 +35,7 @@ test("tracks deleted files correctly", async () => {
 
       await $`rm ${tmp.path}/a.txt`.quiet()
 
-      expect((await Snapshot.patch(before!)).files).toContain(`${tmp.path}/a.txt`)
+      expect((await Snapshot.patch(before!)).files).toContain(`${resolvedPath}/a.txt`)
     },
   })
 })
@@ -117,6 +119,7 @@ test("empty directory handling", async () => {
 
 test("binary file handling", async () => {
   await using tmp = await bootstrap()
+  const resolvedPath = await fs.realpath(tmp.path)
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
@@ -126,7 +129,7 @@ test("binary file handling", async () => {
       await Bun.write(`${tmp.path}/image.png`, Buffer.from([0x89, 0x50, 0x4e, 0x47]))
 
       const patch = await Snapshot.patch(before!)
-      expect(patch.files).toContain(`${tmp.path}/image.png`)
+      expect(patch.files).toContain(`${resolvedPath}/image.png`)
 
       await Snapshot.revert([patch])
       expect(await Bun.file(`${tmp.path}/image.png`).exists()).toBe(false)
@@ -136,6 +139,7 @@ test("binary file handling", async () => {
 
 test("symlink handling", async () => {
   await using tmp = await bootstrap()
+  const resolvedPath = await fs.realpath(tmp.path)
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
@@ -144,13 +148,14 @@ test("symlink handling", async () => {
 
       await $`ln -s ${tmp.path}/a.txt ${tmp.path}/link.txt`.quiet()
 
-      expect((await Snapshot.patch(before!)).files).toContain(`${tmp.path}/link.txt`)
+      expect((await Snapshot.patch(before!)).files).toContain(`${resolvedPath}/link.txt`)
     },
   })
 })
 
 test("large file handling", async () => {
   await using tmp = await bootstrap()
+  const resolvedPath = await fs.realpath(tmp.path)
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
@@ -159,7 +164,7 @@ test("large file handling", async () => {
 
       await Bun.write(`${tmp.path}/large.txt`, "x".repeat(1024 * 1024))
 
-      expect((await Snapshot.patch(before!)).files).toContain(`${tmp.path}/large.txt`)
+      expect((await Snapshot.patch(before!)).files).toContain(`${resolvedPath}/large.txt`)
     },
   })
 })
@@ -184,6 +189,7 @@ test("nested directory revert", async () => {
 
 test("special characters in filenames", async () => {
   await using tmp = await bootstrap()
+  const resolvedPath = await fs.realpath(tmp.path)
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
@@ -195,9 +201,9 @@ test("special characters in filenames", async () => {
       await Bun.write(`${tmp.path}/file_with_underscores.txt`, "UNDERSCORES")
 
       const files = (await Snapshot.patch(before!)).files
-      expect(files).toContain(`${tmp.path}/file with spaces.txt`)
-      expect(files).toContain(`${tmp.path}/file-with-dashes.txt`)
-      expect(files).toContain(`${tmp.path}/file_with_underscores.txt`)
+      expect(files).toContain(`${resolvedPath}/file with spaces.txt`)
+      expect(files).toContain(`${resolvedPath}/file-with-dashes.txt`)
+      expect(files).toContain(`${resolvedPath}/file_with_underscores.txt`)
     },
   })
 })
@@ -289,6 +295,7 @@ test("unicode filenames", async () => {
 
 test("very long filenames", async () => {
   await using tmp = await bootstrap()
+  const resolvedPath = await fs.realpath(tmp.path)
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
@@ -301,7 +308,7 @@ test("very long filenames", async () => {
       await Bun.write(longFile, "long filename content")
 
       const patch = await Snapshot.patch(before!)
-      expect(patch.files).toContain(longFile)
+      expect(patch.files).toContain(`${resolvedPath}/${longName}`)
 
       await Snapshot.revert([patch])
       expect(await Bun.file(longFile).exists()).toBe(false)
@@ -311,6 +318,7 @@ test("very long filenames", async () => {
 
 test("hidden files", async () => {
   await using tmp = await bootstrap()
+  const resolvedPath = await fs.realpath(tmp.path)
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
@@ -322,15 +330,16 @@ test("hidden files", async () => {
       await Bun.write(`${tmp.path}/.config`, "config content")
 
       const patch = await Snapshot.patch(before!)
-      expect(patch.files).toContain(`${tmp.path}/.hidden`)
-      expect(patch.files).toContain(`${tmp.path}/.gitignore`)
-      expect(patch.files).toContain(`${tmp.path}/.config`)
+      expect(patch.files).toContain(`${resolvedPath}/.hidden`)
+      expect(patch.files).toContain(`${resolvedPath}/.gitignore`)
+      expect(patch.files).toContain(`${resolvedPath}/.config`)
     },
   })
 })
 
 test("nested symlinks", async () => {
   await using tmp = await bootstrap()
+  const resolvedPath = await fs.realpath(tmp.path)
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
@@ -343,8 +352,8 @@ test("nested symlinks", async () => {
       await $`ln -s ${tmp.path}/sub ${tmp.path}/sub-link`.quiet()
 
       const patch = await Snapshot.patch(before!)
-      expect(patch.files).toContain(`${tmp.path}/sub/dir/link.txt`)
-      expect(patch.files).toContain(`${tmp.path}/sub-link`)
+      expect(patch.files).toContain(`${resolvedPath}/sub/dir/link.txt`)
+      expect(patch.files).toContain(`${resolvedPath}/sub-link`)
     },
   })
 })
@@ -389,6 +398,7 @@ test("circular symlinks", async () => {
 
 test("gitignore changes", async () => {
   await using tmp = await bootstrap()
+  const resolvedPath = await fs.realpath(tmp.path)
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
@@ -402,11 +412,11 @@ test("gitignore changes", async () => {
       const patch = await Snapshot.patch(before!)
 
       // Should track gitignore itself
-      expect(patch.files).toContain(`${tmp.path}/.gitignore`)
+      expect(patch.files).toContain(`${resolvedPath}/.gitignore`)
       // Should track normal files
-      expect(patch.files).toContain(`${tmp.path}/normal.txt`)
+      expect(patch.files).toContain(`${resolvedPath}/normal.txt`)
       // Should not track ignored files (git won't see them)
-      expect(patch.files).not.toContain(`${tmp.path}/test.ignored`)
+      expect(patch.files).not.toContain(`${resolvedPath}/test.ignored`)
     },
   })
 })
@@ -444,6 +454,8 @@ test("snapshot state isolation between projects", async () => {
   // Test that different projects don't interfere with each other
   await using tmp1 = await bootstrap()
   await using tmp2 = await bootstrap()
+  const resolvedPath1 = await fs.realpath(tmp1.path)
+  const resolvedPath2 = await fs.realpath(tmp2.path)
 
   await Instance.provide({
     directory: tmp1.path,
@@ -451,7 +463,7 @@ test("snapshot state isolation between projects", async () => {
       const before1 = await Snapshot.track()
       await Bun.write(`${tmp1.path}/project1.txt`, "project1 content")
       const patch1 = await Snapshot.patch(before1!)
-      expect(patch1.files).toContain(`${tmp1.path}/project1.txt`)
+      expect(patch1.files).toContain(`${resolvedPath1}/project1.txt`)
     },
   })
 
@@ -461,10 +473,10 @@ test("snapshot state isolation between projects", async () => {
       const before2 = await Snapshot.track()
       await Bun.write(`${tmp2.path}/project2.txt`, "project2 content")
       const patch2 = await Snapshot.patch(before2!)
-      expect(patch2.files).toContain(`${tmp2.path}/project2.txt`)
+      expect(patch2.files).toContain(`${resolvedPath2}/project2.txt`)
 
       // Ensure project1 files don't appear in project2
-      expect(patch2.files).not.toContain(`${tmp1?.path}/project1.txt`)
+      expect(patch2.files).not.toContain(`${resolvedPath1}/project1.txt`)
     },
   })
 })
@@ -535,6 +547,7 @@ test("restore function", async () => {
 
 test("revert should not delete files that existed but were deleted in snapshot", async () => {
   await using tmp = await bootstrap()
+  const resolvedPath = await fs.realpath(tmp.path)
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
@@ -549,7 +562,7 @@ test("revert should not delete files that existed but were deleted in snapshot",
       await Bun.write(`${tmp.path}/a.txt`, "recreated content")
 
       const patch = await Snapshot.patch(snapshot2!)
-      expect(patch.files).toContain(`${tmp.path}/a.txt`)
+      expect(patch.files).toContain(`${resolvedPath}/a.txt`)
 
       await Snapshot.revert([patch])
 
@@ -560,6 +573,7 @@ test("revert should not delete files that existed but were deleted in snapshot",
 
 test("revert preserves file that existed in snapshot when deleted then recreated", async () => {
   await using tmp = await bootstrap()
+  const resolvedPath = await fs.realpath(tmp.path)
   await Instance.provide({
     directory: tmp.path,
     fn: async () => {
@@ -573,14 +587,14 @@ test("revert preserves file that existed in snapshot when deleted then recreated
       await Bun.write(`${tmp.path}/newfile.txt`, "new")
 
       const patch = await Snapshot.patch(snapshot!)
-      expect(patch.files).toContain(`${tmp.path}/existing.txt`)
-      expect(patch.files).toContain(`${tmp.path}/newfile.txt`)
+      expect(patch.files).toContain(`${resolvedPath}/existing.txt`)
+      expect(patch.files).toContain(`${resolvedPath}/newfile.txt`)
 
       await Snapshot.revert([patch])
 
-      expect(await Bun.file(`${tmp.path}/newfile.txt`).exists()).toBe(false)
       expect(await Bun.file(`${tmp.path}/existing.txt`).exists()).toBe(true)
       expect(await Bun.file(`${tmp.path}/existing.txt`).text()).toBe("original content")
+      expect(await Bun.file(`${tmp.path}/newfile.txt`).exists()).toBe(false)
     },
   })
 })
