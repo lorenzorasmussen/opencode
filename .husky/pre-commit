@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Check if any files in command/ directory are staged
+if git diff --cached --name-only | grep -q "^command/"; then
+  # Check if Slash-Commands-Guide.md is also staged
+  if ! git diff --cached --name-only | grep -q "^Slash-Commands-Guide.md$"; then
+    echo "Error: Changes to files in 'command/' directory require updating 'Slash-Commands-Guide.md'"
+    echo "Please read and update Slash-Commands-Guide.md to reflect the changes."
+    exit 1
+  fi
+
+  # Check if any staged files in command/ contain code markers
+  for file in $(git diff --cached --name-only | grep "^command/"); do
+    if git show :"$file" | grep -q "^---\|^```"; then
+      echo "Error: Files in 'command/' directory must not contain code (frontmatter or code blocks)"
+      echo "Remove all --- and ``` from $file"
+      exit 1
+    fi
+  done
+fi

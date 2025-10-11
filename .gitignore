@@ -10,3 +10,30 @@ playground
 tmp
 dist
 .turbo
+
+# macOS
+**/.DS_Store
+.DS_Store
+
+# Hook system
+hooks/logs/*.log
+!hooks/logs/.gitkeep
+hooks/logs/loop_state/*
+!hooks/logs/loop_state/.gitkeep
+.hooks/
+hooks/config/naming_conventions.json
+
+# Caches
+.turbo/cache/
+**/.cache/
+**/cache/
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~

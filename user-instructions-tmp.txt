@@ -1,0 +1,30 @@
+# Instructions to move opencode config directories to ~/.config/.opencode
+
+# This script consolidates user config from ~/.config/opencode and ~/.opencode (if applicable) to ~/.config/.opencode
+# Run these commands in your terminal
+
+# First, remove the existing symlink
+rm ~/.config/.opencode
+
+# Create the new config directory
+mkdir -p ~/.config/.opencode
+
+# Check contents of ~/.config/opencode to avoid overwriting
+echo "Contents of ~/.config/opencode:"
+ls -la ~/.config/opencode
+
+# If there are files, move them (adjust if conflicts)
+mv ~/.config/opencode/* ~/.config/.opencode/ 2>/dev/null || echo "Some files may conflict, check manually"
+
+# Remove the old directory if empty
+rmdir ~/.config/opencode 2>/dev/null || echo "~/.config/opencode not empty, remove manually if desired"
+
+# ~/.opencode is currently a symlink to the project .opencode
+# If it contains user config (not project files), you may need to move those separately
+# But based on current setup, it's the project symlink, so leave it
+
+# Update your PATH if necessary
+# The zshrc has export PATH=/Users/lorenzorasmussen/.config/.opencode/bin:$PATH
+# But since bin is moved, ensure the path is correct
+
+echo "Config move complete. Check ~/.config/.opencode for contents."
