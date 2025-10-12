@@ -37,6 +37,8 @@ export namespace Provider {
       }
     },
     async opencode(input) {
+      input.api = "https://api.opencode.ai/"
+      input.npm = "@ai-sdk/openai-compatible"
       const hasKey = await (async () => {
         if (input.env.some((item) => process.env[item])) return true
         if (await Auth.get(input.id)) return true
@@ -70,6 +72,14 @@ export namespace Provider {
         async getModel(sdk: any, modelID: string) {
           return sdk.responses(modelID)
         },
+        options: {},
+      }
+    },
+    alibaba: async (input) => {
+      input.npm = "@ai-sdk/openai-compatible"
+      input.api = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+      return {
+        autoload: true,
         options: {},
       }
     },
@@ -250,6 +260,10 @@ export namespace Provider {
         parsed.models[modelID] = parsedModel
       }
       database[providerID] = parsed
+      if (providerID === "alibaba" || providerID === "opencode") {
+        parsed.npm = existing?.npm
+        parsed.api = existing?.api
+      }
     }
 
     const disabled = await Config.get().then((cfg) => new Set(cfg.disabled_providers ?? []))
