@@ -90,6 +90,15 @@ export namespace Agent {
         mode: "primary",
         builtIn: true,
       },
+      orchestrator: {
+        name: "orchestrator",
+        description: "Advanced agent for complex multi-step tasks and orchestration, called manually by the user.",
+        tools: { ...defaultTools },
+        options: {},
+        permission: agentPermission,
+        mode: "subagent",
+        builtIn: true,
+      },
     }
     for (const [key, value] of Object.entries(cfg.agent ?? {})) {
       if (value.disable) {

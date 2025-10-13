@@ -1195,7 +1195,7 @@ export namespace SessionPrompt {
 
   function lock(sessionID: string) {
     log.info("locking", { sessionID })
-    if (state().pending.has(sessionID)) throw new Error("TODO")
+    if (state().pending.has(sessionID)) throw new Error(`Session ${sessionID} is already being processed`)
     const controller = new AbortController()
     state().pending.set(sessionID, controller)
     return {
