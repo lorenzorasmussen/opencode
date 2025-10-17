@@ -2,22 +2,40 @@
 
 import { $ } from "bun"
 import { createOpencode } from "@opencode-ai/sdk"
-import { Script } from "@opencode-ai/script"
+if (process.versions.bun !== "1.3.0") {
+  throw new Error("This script requires bun@1.3.0")
+}
 
 const notes = [] as string[]
 
 console.log("=== publishing ===\n")
 
-if (!Script.preview) {
+const snapshot = process.env["OPENCODE_SNAPSHOT"] === "true"
+const version = await (async () => {
+  if (snapshot) return `0.0.0-${new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "")}`
+  if (process.env["OPENCODE_VERSION"]) return process.env["OPENCODE_VERSION"]
+  const npmVersion = await fetch("https://registry.npmjs.org/opencode-ai/latest")
+    .then((res) => {
+      if (!res.ok) throw new Error(res.statusText)
+      return res.json()
+    })
+    .then((data: any) => data.version)
+  const [major, minor, patch] = npmVersion.split(".").map((x: string) => Number(x) || 0)
+  const t = process.env["OPENCODE_BUMP"]?.toLowerCase()
+  if (t === "major") return `${major + 1}.0.0`
+  if (t === "minor") return `${major}.${minor + 1}.0`
+  return `${major}.${minor}.${patch + 1}`
+})()
+process.env["OPENCODE_VERSION"] = version
+console.log("version:", version)
+
+if (!snapshot) {
   const previous = await fetch("https://registry.npmjs.org/opencode-ai/latest")
     .then((res) => {
       if (!res.ok) throw new Error(res.statusText)
       return res.json()
     })
     .then((data: any) => data.version)
-
-  const commits =
-    await $`git log v${previous}..HEAD --oneline --format="%h %s" -- packages/opencode packages/sdk packages/plugin`.text()
 
   const opencode = await createOpencode()
   const session = await opencode.client.session.create()
@@ -36,10 +54,16 @@ if (!Script.preview) {
           {
             type: "text",
             text: `
-          Analyze these commits and generate a changelog of all notable user facing changes.
+          Analyze the commits between ${previous} and HEAD.
 
-          Commits between ${previous} and HEAD:
-          ${commits}
+          We care about changes to
+          - packages/opencode
+          - packages/sdk
+          - packages/plugin
+
+          We do not care about anything else
+
+          Return a changelog of all notable user facing changes.
 
           - Do NOT make general statements about "improvements", be very specific about what was changed.
           - Do NOT include any information about code changes if they do not affect the user facing changes.
@@ -71,9 +95,10 @@ const pkgjsons = await Array.fromAsync(
   }),
 ).then((arr) => arr.filter((x) => !x.includes("node_modules") && !x.includes("dist")))
 
+const tree = await $`git add . && git write-tree`.text().then((x) => x.trim())
 for (const file of pkgjsons) {
   let pkg = await Bun.file(file).text()
-  pkg = pkg.replaceAll(/"version": "[^"]+"/g, `"version": "${Script.version}"`)
+  pkg = pkg.replaceAll(/"version": "[^"]+"/g, `"version": "${version}"`)
   console.log("updated:", file)
   await Bun.file(file).write(pkg)
 }
@@ -91,11 +116,23 @@ await import(`../packages/plugin/script/publish.ts`)
 const dir = new URL("..", import.meta.url).pathname
 process.chdir(dir)
 
-if (!Script.preview) {
-  await $`git commit -am "release: v${Script.version}"`
-  await $`git tag v${Script.version}`
+if (!snapshot) {
+  await $`git commit -am "release: v${version}"`
+  await $`git tag v${version}`
   await $`git fetch origin`
   await $`git cherry-pick HEAD..origin/dev`.nothrow()
-  await $`git push origin HEAD --tags --no-verify --force-with-lease`
-  await $`gh release create v${Script.version} --title "v${Script.version}" --notes ${notes.join("\n") ?? "No notable changes"} ./packages/opencode/dist/*.zip`
+  await $`git push origin HEAD --tags --no-verify --force`
+
+  await $`gh release create v${version} --title "v${version}" --notes ${notes.join("\n") ?? "No notable changes"} ./packages/opencode/dist/*.zip`
+}
+if (snapshot) {
+  await $`git checkout -b snapshot-${version}`
+  await $`git commit --allow-empty -m "Snapshot release v${version}"`
+  await $`git tag v${version}`
+  await $`git push origin v${version} --no-verify`
+  await $`git checkout dev`
+  await $`git branch -D snapshot-${version}`
+  for (const file of pkgjsons) {
+    await $`git checkout ${tree} ${file}`
+  }
 }

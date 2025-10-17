@@ -1,0 +1,364 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "agent": {
+    "orchestrator": {
+      "description": "Project coordination and task management",
+      "mode": "primary",
+      "temperature": 0.1,
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true,
+        "grep": true,
+        "glob": true,
+        "list": true
+      },
+      "permission": {
+        "edit": "allow",
+        "bash": "allow",
+        "webfetch": "ask"
+      },
+      "prompt": "@./agent/orchestrator.md"
+    },
+    "research": {
+      "description": "Research best practices and solutions",
+      "temperature": 0.2,
+      "tools": {
+        "read": true,
+        "grep": true,
+        "glob": true,
+        "list": true,
+        "webfetch": true,
+        "mcp": true
+      },
+      "permission": {
+        "edit": "deny",
+        "bash": "deny",
+        "webfetch": "allow"
+      },
+      "prompt": "@./agent/research.md"
+    },
+    "plan": {
+      "description": "Technical plan and task breakdown",
+      "temperature": 0.1,
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "grep": true,
+        "glob": true,
+        "list": true,
+        "mcp": true
+      },
+      "permission": {
+        "edit": "allow",
+        "bash": "deny",
+        "webfetch": "allow"
+      },
+      "prompt": "@./agent/plan.md"
+    },
+    "build": {
+      "description": "Implementation with tests and docs",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true,
+        "grep": true,
+        "glob": true,
+        "list": true,
+        "patch": true,
+        "mcp": true
+      },
+      "permission": {
+        "edit": "allow",
+        "bash": "allow",
+        "webfetch": "deny"
+      },
+      "prompt": "@./agent/build.md"
+    },
+    "reviewer": {
+      "description": "Spec/constitution compliance validator",
+      "temperature": 0.1,
+      "tools": {
+        "read": true,
+        "grep": true,
+        "glob": true,
+        "list": true,
+        "mcp": true
+      },
+      "permission": {
+        "edit": "deny",
+        "bash": "deny",
+        "webfetch": "deny"
+      },
+      "prompt": "@./agent/code-reviewer.md"
+    },
+    "tests": {
+      "description": "Browser extension testing specialist",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true,
+        "grep": true,
+        "glob": true,
+        "list": true,
+        "mcp": true
+      },
+      "permission": {
+        "edit": "allow",
+        "bash": "allow",
+        "webfetch": "allow"
+      },
+      "prompt": "@./agent/tests.md"
+    }
+  },
+  "subagent": {
+    "specifier": {
+      "description": "Constitution and specification authoring",
+      "temperature": 0.1,
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "grep": true,
+        "glob": true,
+        "list": true,
+        "mcp": true
+      },
+      "permission": {
+        "edit": "allow",
+        "bash": "deny",
+        "webfetch": "allow"
+      },
+      "prompt": "@./agent/research.md"
+    },
+    "architect": {
+      "description": "Architecture review",
+      "temperature": 0.1,
+      "tools": {
+        "read": true,
+        "grep": true,
+        "glob": true,
+        "list": true,
+        "mcp": true
+      },
+      "permission": {
+        "edit": "deny",
+        "bash": "deny",
+        "webfetch": "allow"
+      },
+      "prompt": "@./agent/architect.md"
+    },
+    "debug": {
+      "description": "Multi-context extension debugging specialist",
+      "temperature": 0.1,
+      "tools": {
+        "read": true,
+        "grep": true,
+        "glob": true,
+        "list": true,
+        "bash": true,
+        "mcp": true
+      },
+      "permission": {
+        "edit": "allow",
+        "bash": "allow",
+        "webfetch": "deny"
+      },
+      "prompt": "@./agent/debug.md"
+    },
+    "documentation": {
+      "description": "Documentation generation and maintenance specialist",
+      "temperature": 0.1,
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "grep": true,
+        "glob": true,
+        "list": true,
+        "mcp": true
+      },
+      "permission": {
+        "edit": "allow",
+        "bash": "allow",
+        "webfetch": "allow"
+      },
+      "prompt": "@./agent/docs.md"
+    },
+    "shell-expert": {
+      "description": "Shell scripting and command line expertise",
+      "temperature": 0.1,
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true,
+        "grep": true,
+        "glob": true,
+        "list": true,
+        "mcp": true
+      },
+      "permission": {
+        "edit": "allow",
+        "bash": "allow",
+        "webfetch": "allow"
+      },
+      "prompt": "@./agent/shell-expert.md"
+    }
+  },
+  "mcp": {
+    "filesystem": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/lorenzorasmussen"
+      ],
+      "environment": {},
+      "enabled": true
+    },
+    "memory": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "environment": {},
+      "enabled": true
+    },
+    "github": {
+      "type": "remote",
+      "url": "https://mcp-github.vercel.app",
+      "enabled": true
+    },
+    "git": {
+      "type": "remote",
+      "url": "https://mcp-git.vercel.app",
+      "enabled": true
+    },
+    "sqlite": {
+      "type": "remote",
+      "url": "https://mcp-sqlite.vercel.app",
+      "enabled": true
+    },
+    "notion": {
+      "type": "remote",
+      "url": "https://notion-mcp.example.com/mcp",
+      "enabled": true
+    },
+    "perplexity": {
+      "type": "remote",
+      "url": "https://perplexity-mcp.example.com/mcp",
+      "enabled": true
+    },
+    "brave": {
+      "type": "remote",
+      "url": "https://brave-search-mcp.example.com/mcp",
+      "enabled": true
+    }
+  },
+  "command": {
+    "research": {
+      "description": "Research best practices and solutions",
+      "template": "Research $ARGUMENTS",
+      "agent": "research",
+      "subtask": false
+    },
+    "plan": {
+      "description": "Generate technical plan from spec",
+      "template": "Generate plan for $ARGUMENTS",
+      "agent": "plan",
+      "subtask": false
+    },
+    "todo": {
+      "description": "Create task breakdown from plan",
+      "template": "Create tasks for $ARGUMENTS",
+      "agent": "plan",
+      "subtask": false
+    },
+    "code-review": {
+      "description": "Validate implementation vs spec/constitution",
+      "template": "Validate spec for $ARGUMENTS",
+      "agent": "reviewer",
+      "subtask": true
+    },
+    "security-scan": {
+      "description": "Scan for security vulnerabilities and unsafe patterns",
+      "template": "Scan security for $ARGUMENTS",
+      "agent": "reviewer",
+      "subtask": false
+    },
+    "build": {
+      "description": "Full extension build with all packages",
+      "template": "Build extension",
+      "agent": "build",
+      "subtask": false
+    },
+    "format": {
+      "description": "Format code using Prettier",
+      "template": "Format code for $ARGUMENTS",
+      "agent": "tests",
+      "subtask": false
+    },
+    "test": {
+      "description": "Run unit tests for specific package",
+      "template": "Run tests for $ARGUMENTS",
+      "agent": "tests",
+      "subtask": false
+    },
+    "update-documentation": {
+      "description": "Update documentation (includes API docs, user guides, architecture docs)",
+      "template": "Update docs for $ARGUMENTS",
+      "agent": "documentation",
+      "subtask": false
+    },
+    "debug": {
+      "description": "Debug issues in the extension",
+      "template": "Debug $ARGUMENTS",
+      "agent": "debug",
+      "subtask": false
+    },
+    "validate-build": {
+      "description": "Validate build artifacts for extension",
+      "template": "Validate build for $ARGUMENTS",
+      "agent": "tests",
+      "subtask": false
+    },
+    "commit": {
+      "description": "Analyze changes and create git commit",
+      "template": "Commit $ARGUMENTS",
+      "agent": "build",
+      "subtask": false
+    },
+    "clean": {
+      "description": "Clean up temporary files and optimize workspace",
+      "template": "Clean $ARGUMENTS",
+      "agent": "build",
+      "subtask": false
+    },
+    "context": {
+      "description": "Manage and summarize current context",
+      "template": "Context $ARGUMENTS",
+      "agent": "research",
+      "subtask": false
+    },
+    "prompter": {
+      "description": "Generate optimized prompts for AI tasks",
+      "template": "Generate prompt for $ARGUMENTS",
+      "agent": "research",
+      "subtask": false
+    },
+    "joker": {
+      "description": "Generate fun, random suggestions or jokes",
+      "template": "Joker $ARGUMENTS",
+      "agent": "research",
+      "subtask": false
+    }
+  }
+}
