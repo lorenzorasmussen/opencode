@@ -1,47 +1,31 @@
-## IMPORTANT
+# Agent Guidelines
 
-- Try to keep things in one function unless composable or reusable
-- DO NOT do unnecessary destructuring of variables
-- DO NOT use `else` statements unless necessary
-- DO NOT use `try`/`catch` if it can be avoided
-- AVOID `try`/`catch` where possible
-- AVOID `else` statements
-- AVOID using `any` type
-- AVOID `let` statements
-- PREFER single word variable names where possible
-- Use as many bun apis as possible like Bun.file()
+## Build/Test Commands
 
-## Debugging
+- **Install**: `bun install`
+- **Build**: `bun run build` (packages/opencode)
+- **Test all**: `bun test`
+- **Single test**: `bun test packages/opencode/test/specific.test.ts`
+- **Typecheck**: `bun run typecheck`
+- **Format**: `./script/format.ts`
+- **Lint**: `eslint` (config in script/js/eslint.config.js)
 
-- To test opencode in the `packages/opencode` directory you can run `bun dev`
+## Code Style
 
-## Tool Calling
+- **Runtime**: Bun with TypeScript ESM modules
+- **Formatting**: Prettier (no semicolons, 120 char width), EditorConfig (2 spaces, 80 max line)
+- **Imports**: Relative imports for local modules, named imports preferred
+- **Types**: Zod schemas for validation, TypeScript interfaces for structure
+- **Naming**: camelCase variables/functions, PascalCase classes/namespaces
+- **Error handling**: Result patterns, avoid throwing exceptions in tools
+- **Rules**: Avoid unnecessary destructuring, else statements, try/catch, any type, let statements
+- **Variables**: Prefer single word names where possible
+- **APIs**: Use Bun APIs like Bun.file() extensively
 
-- ALWAYS USE PARALLEL TOOLS WHEN APPLICABLE. Here is an example illustrating how to execute 3 parallel file reads in this chat environnement:
+## Architecture
 
-json
-{
-    "recipient_name": "multi_tool_use.parallel",
-    "parameters": {
-        "tool_uses": [
-            {
-                "recipient_name": "functions.read",
-                "parameters": {
-                    "filePath": "path/to/file.tsx"
-                }
-            },
-            {
-                "recipient_name": "functions.read",
-                "parameters": {
-                    "filePath": "path/to/file.ts"
-                }
-            },
-            {
-                "recipient_name": "functions.read",
-                "parameters": {
-                    "filePath": "path/to/file.md"
-                }
-            }
-        ]
-    }
-}
+- **Tools**: Implement Tool.Info interface with execute() method
+- **Context**: Pass sessionID in tool context, use App.provide() for DI
+- **Validation**: All inputs validated with Zod schemas
+- **Logging**: Use Log.create({ service: "name" }) pattern
+- **Storage**: Use Storage namespace for persistence

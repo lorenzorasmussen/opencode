@@ -1,9 +1,9 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "agent": {
-    "orchestrator": {
-      "description": "Project coordination and task management",
-      "mode": "primary",
+    "plan": {
+      "description": "Strategic planning with orchestration capabilities",
+      "fallback_model": "opencode/zen",
       "temperature": 0.1,
       "tools": {
         "read": true,
@@ -12,54 +12,22 @@
         "bash": true,
         "grep": true,
         "glob": true,
-        "list": true
+        "list": true,
+        "mcp": true
       },
       "permission": {
         "edit": "allow",
         "bash": "allow",
-        "webfetch": "ask"
+        "webfetch": "allow",
+        "*": "deny"
       },
-      "prompt": "@./agent/orchestrator.md"
-    },
-    "research": {
-      "description": "Research best practices and solutions",
-      "temperature": 0.2,
-      "tools": {
-        "read": true,
-        "grep": true,
-        "glob": true,
-        "list": true,
-        "webfetch": true,
-        "mcp": true
-      },
-      "permission": {
-        "edit": "deny",
-        "bash": "deny",
-        "webfetch": "allow"
-      },
-      "prompt": "@./agent/research.md"
-    },
-    "plan": {
-      "description": "Technical plan and task breakdown",
-      "temperature": 0.1,
-      "tools": {
-        "read": true,
-        "write": true,
-        "edit": true,
-        "grep": true,
-        "glob": true,
-        "list": true,
-        "mcp": true
-      },
-      "permission": {
-        "edit": "allow",
-        "bash": "deny",
-        "webfetch": "allow"
-      },
-      "prompt": "@./agent/plan.md"
+      "prompt": "@./agents/plan.md",
+      "subtasks": ["research", "architect", "build", "todo"]
     },
     "build": {
-      "description": "Implementation with tests and docs",
+      "description": "Implementation, testing, review, and version control",
+      "model": "openrouter/meta-llama/llama-3.1-8b-instruct:free",
+      "fallback_model": "opencode/code-supernova",
       "tools": {
         "read": true,
         "write": true,
@@ -74,29 +42,17 @@
       "permission": {
         "edit": "allow",
         "bash": "allow",
-        "webfetch": "deny"
+        "webfetch": "deny",
+        "*": "deny"
       },
-      "prompt": "@./agent/build.md"
+      "prompt": "@./agents/build.md",
+      "subtasks": ["todo", "edit", "format", "code-reviewer"]
     },
-    "reviewer": {
-      "description": "Spec/constitution compliance validator",
-      "temperature": 0.1,
-      "tools": {
-        "read": true,
-        "grep": true,
-        "glob": true,
-        "list": true,
-        "mcp": true
-      },
-      "permission": {
-        "edit": "deny",
-        "bash": "deny",
-        "webfetch": "deny"
-      },
-      "prompt": "@./agent/code-reviewer.md"
-    },
-    "tests": {
-      "description": "Browser extension testing specialist",
+    "research": {
+      "description": "Research, general assistance, and fast Q&A",
+      "model": "perplexity/sonar-pro",
+      "fallback_model": "opencode/zen",
+      "temperature": 0.2,
       "tools": {
         "read": true,
         "write": true,
@@ -105,14 +61,33 @@
         "grep": true,
         "glob": true,
         "list": true,
+        "webfetch": true,
         "mcp": true
       },
       "permission": {
         "edit": "allow",
         "bash": "allow",
-        "webfetch": "allow"
+        "webfetch": "allow",
+        "*": "deny"
       },
-      "prompt": "@./agent/tests.md"
+      "prompt": "@./agents/research.md",
+      "subtasks": ["search", "todo"]
+    },
+    "creative": {
+      "description": "Creative writing and brainstorming agent",
+      "model": "openrouter/mistralai/mistral-7b-instruct:free",
+      "fallback_model": "opencode/zen",
+      "temperature": 0.8,
+      "tools": {
+        "read": true,
+        "write": true
+      },
+      "permission": {
+        "edit": "allow",
+        "*": "deny"
+      },
+      "prompt": "@./agents/creative.md",
+      "subtasks": ["todo"]
     }
   },
   "subagent": {
@@ -133,7 +108,7 @@
         "bash": "deny",
         "webfetch": "allow"
       },
-      "prompt": "@./agent/research.md"
+      "prompt": "@./agents/architect.md"
     },
     "architect": {
       "description": "Architecture review",
@@ -148,9 +123,10 @@
       "permission": {
         "edit": "deny",
         "bash": "deny",
-        "webfetch": "allow"
+        "webfetch": "allow",
+        "*": "deny"
       },
-      "prompt": "@./agent/architect.md"
+      "prompt": "@./agents/architect.md"
     },
     "debug": {
       "description": "Multi-context extension debugging specialist",
@@ -168,7 +144,7 @@
         "bash": "allow",
         "webfetch": "deny"
       },
-      "prompt": "@./agent/debug.md"
+      "prompt": "@./agents/debug.md"
     },
     "documentation": {
       "description": "Documentation generation and maintenance specialist",
@@ -187,7 +163,7 @@
         "bash": "allow",
         "webfetch": "allow"
       },
-      "prompt": "@./agent/docs.md"
+      "prompt": "@./agents/docs.md"
     },
     "shell-expert": {
       "description": "Shell scripting and command line expertise",
@@ -207,28 +183,195 @@
         "bash": "allow",
         "webfetch": "allow"
       },
-      "prompt": "@./agent/shell-expert.md"
+      "prompt": "@./agents/shell-expert.md"
+    },
+    "file-editor": {
+      "description": "File editing and modification subagent",
+      "max-tokens": 800,
+      "temperature": 0.6,
+      "tools": {
+        "read": true,
+        "grep": true,
+        "glob": true,
+        "list": true
+      },
+      "permission": {
+        "edit": "deny",
+        "bash": "deny",
+        "webfetch": "deny",
+        "*": "deny"
+      },
+      "prompt": "@./subagent/template-subagent.md"
+    },
+    "code-reviewer": {
+      "description": "Reviews code for quality and security",
+      "model": "opencode/grok4-fast",
+      "max-tokens": 800,
+      "temperature": 0.1,
+      "tools": {
+        "read": true,
+        "grep": true,
+        "glob": true,
+        "list": true
+      },
+      "permission": {
+        "edit": "deny",
+        "bash": "deny",
+        "webfetch": "deny",
+        "*": "deny"
+      },
+      "prompt": "@./subagent/code-reviewer.md"
+    },
+    "edit": {
+      "description": "File editing subagent",
+      "model": "opencode/code-supernova",
+      "max-tokens": 800,
+      "temperature": 0.1,
+      "tools": {
+        "read": true,
+        "edit": true
+      },
+      "permission": {
+        "edit": "allow",
+        "bash": "deny",
+        "webfetch": "deny",
+        "*": "deny"
+      },
+      "prompt": "@./subagent/edit.md"
+    },
+    "search": {
+      "description": "Advanced code and file search subagent",
+      "model": "openrouter/mistralai/mistral-7b-instruct:free",
+      "fallback_model": "opencode/zen",
+      "max-tokens": 4000,
+      "temperature": 0.1,
+      "tools": {
+        "read": true,
+        "grep": true,
+        "glob": true,
+        "list": true
+      },
+      "permission": {
+        "edit": "deny",
+        "bash": "deny",
+        "webfetch": "allow",
+        "*": "deny"
+      },
+      "prompt": "@./subagent/search.md"
+    },
+    "clean-directory": {
+      "description": "Advanced directory cleanup and organization subagent",
+      "model": "openrouter/mistralai/mistral-7b-instruct:free",
+      "fallback_model": "opencode/zen",
+      "max-tokens": 800,
+      "temperature": 0.1,
+      "tools": {
+        "read": true,
+        "list": true,
+        "bash": true
+      },
+      "permission": {
+        "edit": "allow",
+        "bash": "allow",
+        "webfetch": "deny",
+        "*": "deny"
+      },
+      "prompt": "@./subagent/clean-directory.md"
+    },
+    "format": {
+      "description": "Advanced code formatting subagent",
+      "model": "opencode/grok4-fast",
+      "max-tokens": 800,
+      "temperature": 0.1,
+      "tools": {
+        "read": true,
+        "edit": true,
+        "bash": true
+      },
+      "permission": {
+        "edit": "allow",
+        "bash": "allow",
+        "webfetch": "deny",
+        "*": "deny"
+      },
+      "prompt": "@./subagent/format.md"
+    },
+    "plan": {
+      "description": "Advanced task planning and estimation subagent",
+      "model": "opencode/grok4-fast",
+      "max-tokens": 1000,
+      "temperature": 0.1,
+      "tools": {
+        "read": true,
+        "grep": true,
+        "glob": true,
+        "list": true
+      },
+      "permission": {
+        "edit": "deny",
+        "bash": "deny",
+        "webfetch": "allow",
+        "*": "deny"
+      },
+      "prompt": "@./subagent/plan.md"
+    },
+    "todo": {
+      "description": "Advanced task management subagent",
+      "model": "opencode/code-supernova",
+      "max-tokens": 1000,
+      "temperature": 0.1,
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true
+      },
+      "permission": {
+        "edit": "allow",
+        "bash": "deny",
+        "webfetch": "deny",
+        "*": "deny"
+      },
+      "prompt": "@./subagent/todo.md"
+    },
+    "semantic-search": {
+      "description": "Semantic search using embeddings",
+      "model": "openrouter/openai/text-embedding-3-small",
+      "fallback_model": "opencode/zen",
+      "max-tokens": 500,
+      "temperature": 0.1,
+      "tools": {
+        "read": true
+      },
+      "permission": {
+        "*": "deny"
+      },
+      "prompt": "@./subagent/semantic-search.md"
+    },
+    "result-ranker": {
+      "description": "Reranking search results",
+      "model": "openrouter/cohere/rerank-english-v2.0",
+      "fallback_model": "opencode/code-supernova",
+      "max-tokens": 500,
+      "temperature": 0.1,
+      "tools": {
+        "read": true
+      },
+      "permission": {
+        "*": "deny"
+      },
+      "prompt": "@./subagent/result-ranker.md"
     }
   },
   "mcp": {
     "filesystem": {
       "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "/Users/lorenzorasmussen"
-      ],
+      "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "/Users/lorenzorasmussen"],
       "environment": {},
       "enabled": true
     },
     "memory": {
       "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "@modelcontextprotocol/server-memory"
-      ],
+      "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
       "environment": {},
       "enabled": true
     },

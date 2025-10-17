@@ -9,6 +9,7 @@ export namespace Account {
   export const create = fn(
     z.object({
       email: z.string().email(),
+      passwordHash: z.string().optional(),
       id: z.string().optional(),
     }),
     async (input) =>
@@ -17,6 +18,7 @@ export namespace Account {
         await tx.insert(AccountTable).values({
           id,
           email: input.email,
+          passwordHash: input.passwordHash,
         })
         return id
       }),
