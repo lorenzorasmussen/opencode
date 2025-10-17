@@ -131,28 +131,31 @@ function init() {
     const changeset = createMemo(() => new Set(sync.data.changes.map((f) => f.path)))
     const changes = createMemo(() => Array.from(changeset()).sort((a, b) => a.localeCompare(b)))
 
-    createEffect((prev: FileStatus[]) => {
-      const removed = prev.filter((p) => !sync.data.changes.find((c) => c.path === p.path))
-      for (const p of removed) {
-        setStore(
-          "node",
-          p.path,
-          produce((draft) => {
-            draft.status = undefined
-            draft.view = "raw"
-          }),
-        )
-        load(p.path)
-      }
-      for (const p of sync.data.changes) {
-        if (store.node[p.path] === undefined) {
-          fetch(p.path).then(() => setStore("node", p.path, "status", p))
-        } else {
-          setStore("node", p.path, "status", p)
-        }
-      }
-      return sync.data.changes
-    }, sync.data.changes)
+    // createEffect((prev: FileStatus[]) => {
+    //   const removed = prev.filter((p) => !sync.data.changes.find((c) => c.path === p.path))
+    //   for (const p of removed) {
+    //     setStore(
+    //       "node",
+    //       p.path,
+    //       produce((draft) => {
+    //         draft.status = undefined
+    //         draft.view = "raw"
+    //       }),
+    //     )
+    //     load(p.path)
+    //   }
+    //   for (const p of sync.data.changes) {
+    //     if (store.node[p.path] === undefined) {
+    //       fetch(p.path).then(() => {
+    //         if (store.node[p.path] === undefined) return
+    //         setStore("node", p.path, "status", p)
+    //       })
+    //     } else {
+    //       setStore("node", p.path, "status", p)
+    //     }
+    //   }
+    //   return sync.data.changes
+    // }, sync.data.changes)
 
     const changed = (path: string) => {
       const node = store.node[path]
@@ -200,6 +203,13 @@ function init() {
       if (parent) {
         await list(parent)
       }
+    }
+
+    const init = async (path: string) => {
+      const relativePath = relative(path)
+      if (!store.node[relativePath]) await fetch(path)
+      if (store.node[relativePath].loaded) return
+      return load(relativePath)
     }
 
     const open = async (path: string, options?: { pinned?: boolean; view?: LocalFile["view"] }) => {
@@ -271,6 +281,7 @@ function init() {
       update: (path: string, node: LocalFile) => setStore("node", path, reconcile(node)),
       open,
       load,
+      init,
       close(path: string) {
         setStore("opened", (opened) => opened.filter((x) => x !== path))
         if (store.active === path) {
@@ -459,6 +470,11 @@ function init() {
       return sync.session.get(store.active)
     })
 
+    createEffect(() => {
+      if (!store.active) return
+      sync.session.sync(store.active)
+    })
+
     return {
       active,
       setActive(sessionId: string | undefined) {
@@ -473,11 +489,16 @@ function init() {
   const context = (() => {
     const [store, setStore] = createStore<{
       activeTab: boolean
+      files: string[]
+      activeFile?: string
       items: (ContextItem & { key: string })[]
     }>({
       activeTab: true,
+      files: [],
       items: [],
     })
+    const files = createMemo(() => store.files.map((x) => file.node(x)))
+    const activeFile = createMemo(() => (store.activeFile ? file.node(store.activeFile) : undefined))
 
     return {
       all() {
@@ -504,6 +525,17 @@ function init() {
       },
       remove(key: string) {
         setStore("items", (x) => x.filter((x) => x.key !== key))
+      },
+      files,
+      openFile(path: string) {
+        file.init(path).then(() => {
+          setStore("files", (x) => [...x, path])
+          setStore("activeFile", path)
+        })
+      },
+      activeFile,
+      setActiveFile(path: string | undefined) {
+        setStore("activeFile", path)
       },
     }
   })()
