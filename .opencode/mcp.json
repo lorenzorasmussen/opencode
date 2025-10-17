@@ -1,0 +1,190 @@
+{
+  "mcp": {
+    "mem0": {
+      "type": "local",
+      "command": [
+        "node",
+        "~/projects/mcp-superassistant/src/servers/mem0_server.js"
+      ],
+      "environment": {
+        "PORT": "3100",
+        "MEM0_DIR": "~/projects/mem0",
+        "LOG_LEVEL": "info"
+      },
+      "enabled": true
+    },
+    "gemini-bridge": {
+      "type": "local",
+      "command": [
+        "node",
+        "~/projects/mcp-superassistant/src/bridges/gemini_bridge.js"
+      ],
+      "environment": {
+        "PORT": "3101",
+        "GEMINI_CLI_PATH": "gemini",
+        "GEMINI_MODEL": "gemini-2.5-flash",
+        "AUTH_TYPE": "oauth"
+      },
+      "enabled": true
+    },
+    "qwen-bridge": {
+      "type": "local",
+      "command": [
+        "node",
+        "~/projects/mcp-superassistant/src/bridges/qwen_bridge.js"
+      ],
+      "environment": {
+        "PORT": "3102",
+        "OLLAMA_HOST": "http://localhost:11434",
+        "QWEN_MODEL": "qwen3-coder:7b"
+      },
+      "enabled": true
+    },
+    "computer-use": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@anthropic-ai/mcp-server-computer-use"
+      ],
+      "environment": {
+        "DISPLAY": ":0",
+        "ENABLE_SCREEN": "true",
+        "ENABLE_KEYBOARD": "true",
+        "ENABLE_MOUSE": "true",
+        "SCREENSHOT_DELAY": "100"
+      },
+      "enabled": true
+    },
+    "playwright": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@playwright/mcp-server"
+      ],
+      "environment": {
+        "BROWSER_TYPE": "chromium",
+        "HEADLESS": "false",
+        "VIEWPORT_WIDTH": "1920",
+        "VIEWPORT_HEIGHT": "1080"
+      },
+      "enabled": true
+    },
+    "puppeteer": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-puppeteer"
+      ],
+      "environment": {
+        "CACHE_PATH": "~/.config/opencode/cache/puppeteer",
+        "HEADLESS": "true"
+      },
+      "enabled": true
+    },
+    "filesystem": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "~/.config/opencode",
+        "~/projects/opencode",
+        "~/projects/mcp-superassistant",
+        "~/.plans",
+        "~/.reviews",
+        "~/.debug-sessions-advanced",
+        "~/.security-reviews",
+        "~/.orchestration",
+        "~/.config/config-guardian",
+        "~/.config/zsh",
+        "~/tmp",
+        "~/Downloads",
+        "~/Documents"
+      ],
+      "enabled": true
+    },
+    "memory": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "enabled": true
+    },
+    "git": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-git"
+      ],
+      "enabled": true
+    },
+    "github": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "enabled": true
+    },
+    "sqlite": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sqlite",
+        "~/projects/opencode/data/opencode.db"
+      ],
+      "enabled": true
+    },
+    "fetch": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-fetch"
+      ],
+      "enabled": true
+    },
+    "sequential-thinking": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "enabled": true
+    },
+    "everything": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-everything"
+      ],
+      "enabled": true
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://api.context7.ai/v1/mcp",
+      "headers": {
+        "Authorization": "Bearer ${CONTEXT7_API_KEY}"
+      },
+      "enabled": true
+    },
+    "gh_grep": {
+      "type": "remote",
+      "url": "https://grep.vercel.com/api/mcp",
+      "enabled": false
+    }
+  },
+  "tools": {
+    "disable": []
+  }
+}

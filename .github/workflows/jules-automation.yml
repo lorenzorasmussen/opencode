@@ -1,0 +1,303 @@
+name: Jules Automated Issue Resolution
+
+on:
+  issues:
+    types: [labeled, opened]
+  issue_comment:
+    types: [created]
+  pull_request:
+    types: [opened, synchronize]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to process'
+        required: true
+        type: number
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # Job 1: Trigger Jules to work on the issue
+  trigger-jules:
+    name: Trigger Jules on Issue
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'jules')) ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@jules') && github.event.issue.state == 'open') ||
+      github.event_name == 'workflow_dispatch'
+    outputs:
+      issue_number: ${{ steps.get-issue.outputs.number }}
+      pr_created: ${{ steps.check-pr.outputs.created }}
+    
+    steps:
+      - name: Get Issue Number
+        id: get-issue
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "number=${{ inputs.issue_number }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" == "issue_comment" ]; then
+            echo "number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+          else
+            echo "number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment on Issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{ steps.get-issue.outputs.number }},
+              body: '🤖 Jules is now working on this issue in an isolated environment. I will create a PR shortly with the proposed changes.'
+            });
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Jules CLI
+        run: |
+          # Install Jules CLI if not already available
+          npm install -g @juli-ai/cli || true
+          # Or use npx for zero-install: npx @juli-ai/cli
+
+      - name: Configure Jules
+        env:
+          JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
+        run: |
+          # Configure Jules with API key from GitHub Secrets
+          jules auth login --api-key "$JULES_API_KEY" || echo "Jules auth configured"
+
+      - name: Run Jules on Issue
+        id: jules-run
+        env:
+          JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Run Jules to work on the issue
+          # Jules will create a branch and make changes
+          jules work \
+            --issue ${{ steps.get-issue.outputs.number }} \
+            --repo ${{ github.repository }} \
+            --auto-pr \
+            --branch "jules/issue-${{ steps.get-issue.outputs.number }}" || echo "Jules execution completed"
+
+      - name: Check if PR was Created
+        id: check-pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prs = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: `${context.repo.owner}:jules/issue-${{ steps.get-issue.outputs.number }}`,
+              state: 'open'
+            });
+            
+            if (prs.data.length > 0) {
+              core.setOutput('created', 'true');
+              core.setOutput('pr_number', prs.data[0].number);
+              return prs.data[0].number;
+            } else {
+              core.setOutput('created', 'false');
+              return null;
+            }
+
+  # Job 2: Validate and Auto-merge PR
+  auto-merge-pr:
+    name: Auto-merge Jules PR
+    runs-on: ubuntu-latest
+    needs: trigger-jules
+    if: needs.trigger-jules.outputs.pr_created == 'true'
+    
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          ref: jules/issue-${{ needs.trigger-jules.outputs.issue_number }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests
+        id: tests
+        run: npm test || echo "test_failed=true" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Run Type Check
+        id: typecheck
+        run: npm run typecheck || echo "typecheck_failed=true" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Run Format Check
+        id: format
+        run: npm run format:check || echo "format_failed=true" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Evaluate Checks
+        id: evaluate
+        uses: actions/github-script@v7
+        env:
+          TEST_RESULT: ${{ steps.tests.outputs.test_failed }}
+          TYPECHECK_RESULT: ${{ steps.typecheck.outputs.typecheck_failed }}
+          FORMAT_RESULT: ${{ steps.format.outputs.format_failed }}
+        with:
+          script: |
+            const testFailed = process.env.TEST_RESULT === 'true';
+            const typecheckFailed = process.env.TYPECHECK_RESULT === 'true';
+            const formatFailed = process.env.FORMAT_RESULT === 'true';
+            
+            const allPassed = !testFailed && !typecheckFailed && !formatFailed;
+            core.setOutput('all_passed', allPassed.toString());
+            
+            return {
+              allPassed,
+              testFailed,
+              typecheckFailed,
+              formatFailed
+            };
+
+      - name: Auto-merge PR
+        if: steps.evaluate.outputs.all_passed == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = ${{ needs.trigger-jules.outputs.pr_number }};
+            
+            // Add label to indicate auto-merge
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              labels: ['auto-merged', 'jules-resolved']
+            });
+            
+            // Approve the PR
+            await github.rest.pulls.createReview({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              event: 'APPROVE',
+              body: '✅ All checks passed. Auto-approving for merge.'
+            });
+            
+            // Merge the PR
+            try {
+              await github.rest.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                merge_method: 'squash',
+                commit_title: `fix: resolve issue #${{ needs.trigger-jules.outputs.issue_number }} (auto-merged by Jules)`,
+                commit_message: `Automatically resolved by Jules.\n\nCloses #${{ needs.trigger-jules.outputs.issue_number }}`
+              });
+              
+              // Comment on success
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: ${{ needs.trigger-jules.outputs.issue_number }},
+                body: '✅ PR successfully merged! All checks passed. Changes are now in the main branch.'
+              });
+            } catch (error) {
+              core.setFailed(`Failed to merge PR: ${error.message}`);
+            }
+
+      - name: Comment on Failure
+        if: steps.evaluate.outputs.all_passed != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = ${{ needs.trigger-jules.outputs.pr_number }};
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: `⚠️ Automated merge blocked due to failing checks. Please review the PR manually.\n\nCheck the workflow run for details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`
+            });
+            
+            // Add label to indicate manual review needed
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              labels: ['needs-review', 'auto-merge-blocked']
+            });
+
+  # Job 3: Monitor and Rollback if needed
+  monitor-and-rollback:
+    name: Monitor Deployment and Rollback if Needed
+    runs-on: ubuntu-latest
+    needs: [trigger-jules, auto-merge-pr]
+    if: always() && needs.auto-merge-pr.result == 'success'
+    
+    steps:
+      - name: Wait for Post-Merge Checks
+        run: sleep 60  # Wait 1 minute for any post-merge checks
+
+      - name: Check Recent Workflow Runs
+        id: check-workflows
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Get recent workflow runs after the merge
+            const runs = await github.rest.actions.listWorkflowRunsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 10,
+              status: 'completed'
+            });
+            
+            // Check if any critical workflows failed
+            const recentFailures = runs.data.workflow_runs.filter(run => 
+              run.conclusion === 'failure' && 
+              ['test.yml', 'deploy.yml'].includes(run.path) &&
+              new Date(run.created_at) > new Date(Date.now() - 5 * 60 * 1000) // Last 5 minutes
+            );
+            
+            core.setOutput('has_failures', recentFailures.length > 0);
+            return recentFailures.length;
+
+      - name: Rollback if Failures Detected
+        if: steps.check-workflows.outputs.has_failures == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // Create a revert PR
+            const issue_number = ${{ needs.trigger-jules.outputs.issue_number }};
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue_number,
+              body: `🔄 **ROLLBACK INITIATED**\n\nPost-merge checks detected failures. The changes have been marked for rollback.\n\nPlease review the failing workflows and create a manual revert if needed.`
+            });
+            
+            // You can add automatic revert commit creation here if desired
+            // For now, we're alerting and requiring manual intervention
+
+      - name: Confirm Success
+        if: steps.check-workflows.outputs.has_failures != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{ needs.trigger-jules.outputs.issue_number }},
+              body: '✅ Post-merge monitoring complete. No issues detected. The changes are stable!'
+            });

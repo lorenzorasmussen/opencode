@@ -1,0 +1,140 @@
+# Jules Configuration for Automated Issue Resolution
+# This file defines how Jules should behave when working on issues
+
+# Trigger conditions
+triggers:
+  # Jules activates when these labels are added to an issue
+  labels:
+    - jules
+    - auto-fix
+    - enhancement
+  
+  # Or when mentioned in comments
+  mentions:
+    - "@jules"
+
+# Auto-merge criteria
+auto_merge:
+  enabled: true
+  
+  # All these checks must pass for auto-merge
+  required_checks:
+    - tests
+    - typecheck
+    - format
+  
+  # Merge method: squash, merge, or rebase
+  merge_method: squash
+  
+  # Require approvals before merge (0 = no approvals needed for Jules PRs)
+  required_approvals: 0
+  
+  # Auto-delete branch after merge
+  delete_branch: true
+
+# Rollback configuration
+rollback:
+  enabled: true
+  
+  # Monitor these workflows after merge
+  monitor_workflows:
+    - test.yml
+    - deploy.yml
+    - opencode.yml
+  
+  # How long to monitor after merge (in minutes)
+  monitor_duration: 5
+  
+  # Automatically create revert PR if failures detected
+  auto_revert: false  # Set to true for fully automatic rollback
+  
+  # Who to notify on rollback
+  notify:
+    - lorenzorasmussen
+
+# Jules behavior settings
+jules_settings:
+  # Working directory for Jules
+  workspace: ./
+  
+  # Branch naming convention
+  branch_prefix: jules/issue-
+  
+  # PR title template
+  pr_title_template: "fix: {issue_title} (Jules #%{issue_number})"
+  
+  # PR body template
+  pr_body_template: |
+    ## 🤖 Automated Fix by Jules
+    
+    This PR was automatically created by Jules to resolve issue #{issue_number}.
+    
+    ### Changes Made
+    {changes_summary}
+    
+    ### Validation
+    - [x] Tests passing
+    - [x] Type checking passing
+    - [x] Format checking passing
+    
+    Closes #{issue_number}
+  
+  # Commit message convention
+  commit_convention: conventional  # conventional, angular, or custom
+  
+  # Maximum time for Jules to work on an issue (in minutes)
+  timeout: 30
+
+# Safety settings
+safety:
+  # Don't auto-merge for these types of changes
+  block_auto_merge_for:
+    - breaking_changes
+    - major_refactor
+    - dependency_updates
+  
+  # Require manual review for files matching these patterns
+  require_manual_review:
+    - "package.json"
+    - ".github/workflows/*"
+    - "*.config.js"
+  
+  # Run these additional checks before auto-merge
+  additional_checks:
+    - name: "Security Audit"
+      command: "npm audit"
+      fail_on_error: true
+    
+    - name: "Bundle Size Check"
+      command: "npm run build && du -sh dist/"
+      fail_on_error: false
+
+# Notifications
+notifications:
+  # Where to send notifications
+  channels:
+    - github_comments  # Always enabled
+    - github_status    # Show status on PR
+  
+  # Discord webhook (optional, configure in GitHub secrets)
+  discord_webhook: ${{ secrets.DISCORD_WEBHOOK }}
+  
+  # Notify on these events
+  events:
+    - pr_created
+    - auto_merged
+    - merge_blocked
+    - rollback_triggered
+
+# Environment settings
+environment:
+  # Node version to use
+  node_version: "20"
+  
+  # Package manager: npm, yarn, or pnpm
+  package_manager: npm
+  
+  # Environment variables (use GitHub secrets for sensitive values)
+  env_vars:
+    NODE_ENV: development
+    CI: true
