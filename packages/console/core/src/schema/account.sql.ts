@@ -7,6 +7,7 @@ export const AccountTable = mysqlTable(
     id: id(),
     ...timestamps,
     email: varchar("email", { length: 255 }).notNull(),
+    passwordHash: varchar("password_hash", { length: 255 }),
   },
   (table) => [uniqueIndex("email").on(table.email)],
 )
