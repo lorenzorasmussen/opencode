@@ -4,7 +4,8 @@ export const domain = (() => {
   return `${$app.stage}.dev.opencode.ai`
 })()
 
-export const zoneID = "430ba34c138cfb5360826c4909f99be8"
+const CLOUDFLARE_ZONE_ID = new sst.Secret("CLOUDFLARE_ZONE_ID")
+export const zoneID = CLOUDFLARE_ZONE_ID.value
 
 new cloudflare.RegionalHostname("RegionalHostname", {
   hostname: domain,

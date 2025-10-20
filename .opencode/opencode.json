@@ -1,33 +1,93 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "agent": {
-    "plan": {
-      "description": "Strategic planning with orchestration capabilities",
-      "fallback_model": "opencode/zen",
-      "temperature": 0.1,
-      "tools": {
-        "read": true,
-        "write": true,
-        "edit": true,
-        "bash": true,
-        "grep": true,
-        "glob": true,
-        "list": true,
-        "mcp": true
-      },
-      "permission": {
-        "edit": "allow",
-        "bash": "allow",
-        "webfetch": "allow",
-        "*": "deny"
-      },
-      "prompt": "@./agents/plan.md",
-      "subtasks": ["research", "architect", "build", "todo"]
-    },
-    "build": {
-      "description": "Implementation, testing, review, and version control",
-      "model": "openrouter/meta-llama/llama-3.1-8b-instruct:free",
-      "fallback_model": "opencode/code-supernova",
+
+  "theme": "default",
+
+  "model": "opencode/code-supernova",
+  "small_model": "opencode/code-supernova",
+
+  "username": "Lorenzo",
+
+  "share": "manual",
+  "autoupdate": true,
+  "snapshot": true,
+
+  "disabled_providers": [],
+
+  "plugin": [],
+
+  "instructions": ["./**/AGENTS.md", "./**/INSTRUCTIONS.md"],
+
+  "keybinds": {
+    "leader": "ctrl+x",
+    "app_help": "<leader>h",
+    "app_exit": "ctrl+c,<leader>q",
+    "editor_open": "<leader>e",
+    "theme_list": "<leader>t",
+    "project_init": "<leader>i",
+    "tool_details": "<leader>d",
+    "thinking_blocks": "<leader>b",
+    "session_export": "<leader>x",
+    "session_new": "<leader>n",
+    "session_list": "<leader>l",
+    "session_timeline": "<leader>g",
+    "session_share": "<leader>s",
+    "session_unshare": "none",
+    "session_interrupt": "esc",
+    "session_compact": "<leader>c",
+    "session_child_cycle": "ctrl+right",
+    "session_child_cycle_reverse": "ctrl+left",
+    "messages_page_up": "pgup",
+    "messages_page_down": "pgdown",
+    "messages_half_page_up": "ctrl+alt+u",
+    "messages_half_page_down": "ctrl+alt+d",
+    "messages_first": "ctrl+g",
+    "messages_last": "ctrl+alt+g",
+    "messages_copy": "<leader>y",
+    "messages_undo": "<leader>u",
+    "messages_redo": "<leader>r",
+    "model_list": "<leader>m",
+    "model_cycle_recent": "f2",
+    "model_cycle_recent_reverse": "shift+f2",
+    "agent_list": "<leader>a",
+    "agent_cycle": "tab",
+    "agent_cycle_reverse": "shift+tab",
+    "input_clear": "ctrl+c",
+    "input_paste": "ctrl+v",
+    "input_submit": "enter",
+    "input_newline": "shift+enter,ctrl+j"
+  },
+
+  "tui": {
+    "scroll_speed": 3
+  },
+
+  "watcher": {
+    "ignore": ["**/node_modules/**", "**/.git/**", "**/dist/**", "**/build/**", "**/.next/**", "**/.cache/**"]
+  },
+
+  "permission": {
+    "edit": "allow",
+    "bash": "ask",
+    "webfetch": "allow"
+  },
+
+   "tools": {
+     "read": true,
+     "write": true,
+     "edit": true,
+     "bash": true,
+     "grep": true,
+     "glob": true,
+     "list": true,
+     "patch": true,
+     "webfetch": true,
+     "mcp": true,
+     "todoread": true,
+     "todorite": true
+   },
+      "top_p": 0.95,
+      "mode": "primary",
       "tools": {
         "read": true,
         "write": true,
@@ -42,17 +102,17 @@
       "permission": {
         "edit": "allow",
         "bash": "allow",
-        "webfetch": "deny",
-        "*": "deny"
+        "webfetch": "deny"
       },
-      "prompt": "@./agents/build.md",
-      "subtasks": ["todo", "edit", "format", "code-reviewer"]
+
+      "disable": false
     },
     "research": {
       "description": "Research, general assistance, and fast Q&A",
       "model": "perplexity/sonar-pro",
-      "fallback_model": "opencode/zen",
       "temperature": 0.2,
+      "top_p": 0.9,
+      "mode": "primary",
       "tools": {
         "read": true,
         "write": true,
@@ -67,70 +127,92 @@
       "permission": {
         "edit": "allow",
         "bash": "allow",
-        "webfetch": "allow",
-        "*": "deny"
+        "webfetch": "allow"
       },
-      "prompt": "@./agents/research.md",
-      "subtasks": ["search", "todo"]
+
+      "disable": false
     },
     "creative": {
       "description": "Creative writing and brainstorming agent",
       "model": "openrouter/mistralai/mistral-7b-instruct:free",
-      "fallback_model": "opencode/zen",
       "temperature": 0.8,
+      "top_p": 0.95,
+      "mode": "primary",
       "tools": {
         "read": true,
         "write": true
       },
       "permission": {
         "edit": "allow",
-        "*": "deny"
+        "bash": "deny",
+        "webfetch": "deny"
       },
-      "prompt": "@./agents/creative.md",
-      "subtasks": ["todo"]
-    }
-  },
-  "subagent": {
-    "specifier": {
-      "description": "Constitution and specification authoring",
-      "temperature": 0.1,
-      "tools": {
-        "read": true,
-        "write": true,
-        "edit": true,
-        "grep": true,
-        "glob": true,
-        "list": true,
-        "mcp": true
-      },
+
+      "disable": false
+    },
+     "specifier": {
+       "description": "Constitution and specification authoring",
+       "temperature": 0.1,
+       "top_p": 0.95,
+       "mode": "subagent",
+       "tools": {
+         "read": true,
+         "write": true,
+         "edit": true,
+         "grep": true,
+         "glob": true,
+         "list": true,
+         "mcp": true
+       },
+       "permission": {
+         "edit": "allow",
+         "bash": "deny",
+         "webfetch": "allow"
+       },
+
+       "disable": false
+     },
       "permission": {
         "edit": "allow",
         "bash": "deny",
         "webfetch": "allow"
       },
-      "prompt": "@./agents/architect.md"
+
+      "disable": false
     },
-    "architect": {
-      "description": "Architecture review",
-      "temperature": 0.1,
-      "tools": {
-        "read": true,
-        "grep": true,
-        "glob": true,
-        "list": true,
-        "mcp": true
-      },
+     "architect": {
+       "description": "Architecture review",
+       "temperature": 0.1,
+       "top_p": 0.95,
+       "mode": "subagent",
+       "tools": {
+         "read": true,
+         "grep": true,
+         "glob": true,
+         "list": true,
+         "mcp": true
+       },
+       "permission": {
+         "edit": "deny",
+         "bash": "deny",
+         "webfetch": "allow"
+       },
+
+       "disable": false
+     },
       "permission": {
         "edit": "deny",
         "bash": "deny",
-        "webfetch": "allow",
-        "*": "deny"
+        "webfetch": "allow"
       },
-      "prompt": "@./agents/architect.md"
+
+      "disable": false
     },
     "debug": {
       "description": "Multi-context extension debugging specialist",
       "temperature": 0.1,
+      "top_p": 0.95,
+      "mode": "subagent",
       "tools": {
         "read": true,
         "grep": true,
@@ -144,11 +226,14 @@
         "bash": "allow",
         "webfetch": "deny"
       },
-      "prompt": "@./agents/debug.md"
+
+      "disable": false
     },
     "documentation": {
       "description": "Documentation generation and maintenance specialist",
       "temperature": 0.1,
+      "top_p": 0.95,
+      "mode": "subagent",
       "tools": {
         "read": true,
         "write": true,
@@ -163,11 +248,14 @@
         "bash": "allow",
         "webfetch": "allow"
       },
-      "prompt": "@./agents/docs.md"
+
+      "disable": false
     },
     "shell-expert": {
       "description": "Shell scripting and command line expertise",
       "temperature": 0.1,
+      "top_p": 0.95,
+      "mode": "subagent",
       "tools": {
         "read": true,
         "write": true,
@@ -183,12 +271,14 @@
         "bash": "allow",
         "webfetch": "allow"
       },
-      "prompt": "@./agents/shell-expert.md"
+
+      "disable": false
     },
     "file-editor": {
       "description": "File editing and modification subagent",
-      "max-tokens": 800,
       "temperature": 0.6,
+      "top_p": 0.95,
+      "mode": "subagent",
       "tools": {
         "read": true,
         "grep": true,
@@ -198,16 +288,17 @@
       "permission": {
         "edit": "deny",
         "bash": "deny",
-        "webfetch": "deny",
-        "*": "deny"
+        "webfetch": "deny"
       },
-      "prompt": "@./subagent/template-subagent.md"
+
+      "disable": false
     },
     "code-reviewer": {
       "description": "Reviews code for quality and security",
       "model": "opencode/grok4-fast",
-      "max-tokens": 800,
       "temperature": 0.1,
+      "top_p": 0.95,
+      "mode": "subagent",
       "tools": {
         "read": true,
         "grep": true,
@@ -215,18 +306,19 @@
         "list": true
       },
       "permission": {
-        "edit": "deny",
+        "edit": "allow",
         "bash": "deny",
-        "webfetch": "deny",
-        "*": "deny"
+        "webfetch": "deny"
       },
-      "prompt": "@./subagent/code-reviewer.md"
+
+      "disable": false
     },
     "edit": {
       "description": "File editing subagent",
       "model": "opencode/code-supernova",
-      "max-tokens": 800,
       "temperature": 0.1,
+      "top_p": 0.95,
+      "mode": "subagent",
       "tools": {
         "read": true,
         "edit": true
@@ -234,17 +326,17 @@
       "permission": {
         "edit": "allow",
         "bash": "deny",
-        "webfetch": "deny",
-        "*": "deny"
+        "webfetch": "deny"
       },
-      "prompt": "@./subagent/edit.md"
+
+      "disable": false
     },
     "search": {
       "description": "Advanced code and file search subagent",
       "model": "openrouter/mistralai/mistral-7b-instruct:free",
-      "fallback_model": "opencode/zen",
-      "max-tokens": 4000,
       "temperature": 0.1,
+      "top_p": 0.95,
+      "mode": "subagent",
       "tools": {
         "read": true,
         "grep": true,
@@ -254,17 +346,17 @@
       "permission": {
         "edit": "deny",
         "bash": "deny",
-        "webfetch": "allow",
-        "*": "deny"
+        "webfetch": "allow"
       },
-      "prompt": "@./subagent/search.md"
+
+      "disable": false
     },
     "clean-directory": {
       "description": "Advanced directory cleanup and organization subagent",
       "model": "openrouter/mistralai/mistral-7b-instruct:free",
-      "fallback_model": "opencode/zen",
-      "max-tokens": 800,
       "temperature": 0.1,
+      "top_p": 0.95,
+      "mode": "subagent",
       "tools": {
         "read": true,
         "list": true,
@@ -273,16 +365,17 @@
       "permission": {
         "edit": "allow",
         "bash": "allow",
-        "webfetch": "deny",
-        "*": "deny"
+        "webfetch": "deny"
       },
-      "prompt": "@./subagent/clean-directory.md"
+
+      "disable": false
     },
     "format": {
       "description": "Advanced code formatting subagent",
-      "model": "opencode/grok4-fast",
-      "max-tokens": 800,
+      "model": "opencode/grok-code-fast-1",
       "temperature": 0.1,
+      "top_p": 0.95,
+      "mode": "subagent",
       "tools": {
         "read": true,
         "edit": true,
@@ -291,16 +384,17 @@
       "permission": {
         "edit": "allow",
         "bash": "allow",
-        "webfetch": "deny",
-        "*": "deny"
+        "webfetch": "deny"
       },
-      "prompt": "@./subagent/format.md"
+
+      "disable": false
     },
-    "plan": {
+    "plan-subagent": {
       "description": "Advanced task planning and estimation subagent",
-      "model": "opencode/grok4-fast",
-      "max-tokens": 1000,
+      "model": "opencode/grok-code-fast-1",
       "temperature": 0.1,
+      "top_p": 0.95,
+      "mode": "subagent",
       "tools": {
         "read": true,
         "grep": true,
@@ -310,16 +404,17 @@
       "permission": {
         "edit": "deny",
         "bash": "deny",
-        "webfetch": "allow",
-        "*": "deny"
+        "webfetch": "allow"
       },
-      "prompt": "@./subagent/plan.md"
+
+      "disable": false
     },
     "todo": {
       "description": "Advanced task management subagent",
       "model": "opencode/code-supernova",
-      "max-tokens": 1000,
       "temperature": 0.1,
+      "top_p": 0.95,
+      "mode": "subagent",
       "tools": {
         "read": true,
         "write": true,
@@ -328,40 +423,47 @@
       "permission": {
         "edit": "allow",
         "bash": "deny",
-        "webfetch": "deny",
-        "*": "deny"
+        "webfetch": "deny"
       },
-      "prompt": "@./subagent/todo.md"
+
+      "disable": false
     },
     "semantic-search": {
       "description": "Semantic search using embeddings",
       "model": "openrouter/openai/text-embedding-3-small",
-      "fallback_model": "opencode/zen",
-      "max-tokens": 500,
       "temperature": 0.1,
+      "top_p": 0.95,
+      "mode": "subagent",
       "tools": {
         "read": true
       },
       "permission": {
-        "*": "deny"
+        "edit": "deny",
+        "bash": "deny",
+        "webfetch": "deny"
       },
-      "prompt": "@./subagent/semantic-search.md"
+
+      "disable": false
     },
     "result-ranker": {
       "description": "Reranking search results",
       "model": "openrouter/cohere/rerank-english-v2.0",
-      "fallback_model": "opencode/code-supernova",
-      "max-tokens": 500,
       "temperature": 0.1,
+      "top_p": 0.95,
+      "mode": "subagent",
       "tools": {
         "read": true
       },
       "permission": {
-        "*": "deny"
+        "edit": "deny",
+        "bash": "deny",
+        "webfetch": "deny"
       },
-      "prompt": "@./subagent/result-ranker.md"
+
+      "disable": false
     }
   },
+
   "mcp": {
     "filesystem": {
       "type": "local",
@@ -378,130 +480,93 @@
     "github": {
       "type": "remote",
       "url": "https://mcp-github.vercel.app",
-      "enabled": true
+      "enabled": true,
+      "headers": {}
     },
     "git": {
       "type": "remote",
       "url": "https://mcp-git.vercel.app",
-      "enabled": true
+      "enabled": true,
+      "headers": {}
     },
     "sqlite": {
       "type": "remote",
       "url": "https://mcp-sqlite.vercel.app",
-      "enabled": true
+      "enabled": true,
+      "headers": {}
     },
     "notion": {
       "type": "remote",
       "url": "https://notion-mcp.example.com/mcp",
-      "enabled": true
+      "enabled": false,
+      "headers": {}
     },
     "perplexity": {
       "type": "remote",
       "url": "https://perplexity-mcp.example.com/mcp",
-      "enabled": true
+      "enabled": false,
+      "headers": {}
     },
     "brave": {
       "type": "remote",
       "url": "https://brave-search-mcp.example.com/mcp",
-      "enabled": true
+      "enabled": false,
+      "headers": {}
     }
   },
-  "command": {
-    "research": {
-      "description": "Research best practices and solutions",
-      "template": "Research $ARGUMENTS",
-      "agent": "research",
-      "subtask": false
+
+  "formatter": {
+    "prettier": {
+      "disabled": false,
+      "command": ["prettier", "--write"],
+      "environment": {},
+      "extensions": [".js", ".ts", ".jsx", ".tsx", ".json", ".md", ".css", ".html"]
     },
-    "plan": {
-      "description": "Generate technical plan from spec",
-      "template": "Generate plan for $ARGUMENTS",
-      "agent": "plan",
-      "subtask": false
+    "black": {
+      "disabled": false,
+      "command": ["black"],
+      "environment": {},
+      "extensions": [".py"]
     },
-    "todo": {
-      "description": "Create task breakdown from plan",
-      "template": "Create tasks for $ARGUMENTS",
-      "agent": "plan",
-      "subtask": false
-    },
-    "code-review": {
-      "description": "Validate implementation vs spec/constitution",
-      "template": "Validate spec for $ARGUMENTS",
-      "agent": "reviewer",
-      "subtask": true
-    },
-    "security-scan": {
-      "description": "Scan for security vulnerabilities and unsafe patterns",
-      "template": "Scan security for $ARGUMENTS",
-      "agent": "reviewer",
-      "subtask": false
-    },
-    "build": {
-      "description": "Full extension build with all packages",
-      "template": "Build extension",
-      "agent": "build",
-      "subtask": false
-    },
-    "format": {
-      "description": "Format code using Prettier",
-      "template": "Format code for $ARGUMENTS",
-      "agent": "tests",
-      "subtask": false
-    },
-    "test": {
-      "description": "Run unit tests for specific package",
-      "template": "Run tests for $ARGUMENTS",
-      "agent": "tests",
-      "subtask": false
-    },
-    "update-documentation": {
-      "description": "Update documentation (includes API docs, user guides, architecture docs)",
-      "template": "Update docs for $ARGUMENTS",
-      "agent": "documentation",
-      "subtask": false
-    },
-    "debug": {
-      "description": "Debug issues in the extension",
-      "template": "Debug $ARGUMENTS",
-      "agent": "debug",
-      "subtask": false
-    },
-    "validate-build": {
-      "description": "Validate build artifacts for extension",
-      "template": "Validate build for $ARGUMENTS",
-      "agent": "tests",
-      "subtask": false
-    },
-    "commit": {
-      "description": "Analyze changes and create git commit",
-      "template": "Commit $ARGUMENTS",
-      "agent": "build",
-      "subtask": false
-    },
-    "clean": {
-      "description": "Clean up temporary files and optimize workspace",
-      "template": "Clean $ARGUMENTS",
-      "agent": "build",
-      "subtask": false
-    },
-    "context": {
-      "description": "Manage and summarize current context",
-      "template": "Context $ARGUMENTS",
-      "agent": "research",
-      "subtask": false
-    },
-    "prompter": {
-      "description": "Generate optimized prompts for AI tasks",
-      "template": "Generate prompt for $ARGUMENTS",
-      "agent": "research",
-      "subtask": false
-    },
-    "joker": {
-      "description": "Generate fun, random suggestions or jokes",
-      "template": "Joker $ARGUMENTS",
-      "agent": "research",
-      "subtask": false
+    "rustfmt": {
+      "disabled": false,
+      "command": ["rustfmt"],
+      "environment": {},
+      "extensions": [".rs"]
     }
+  },
+
+  "lsp": {
+    "typescript": {
+      "command": ["typescript-language-server", "--stdio"],
+      "extensions": [".ts", ".tsx", ".js", ".jsx"],
+      "disabled": false,
+      "env": {},
+      "initialization": {}
+    },
+    "python": {
+      "command": ["pyright-langserver", "--stdio"],
+      "extensions": [".py"],
+      "disabled": false,
+      "env": {},
+      "initialization": {}
+    },
+    "rust": {
+      "command": ["rust-analyzer"],
+      "extensions": [".rs"],
+      "disabled": false,
+      "env": {},
+      "initialization": {}
+    }
+  },
+
+
+
+  "experimental": {
+    "hook": {
+      "file_edited": {},
+      "session_completed": []
+    },
+    "disable_paste_summary": false
   }
 }

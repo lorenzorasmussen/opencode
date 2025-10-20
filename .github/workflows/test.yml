@@ -17,13 +17,60 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Bun
-        uses: ./.github/actions/setup-bun
+       - name: Setup Bun
+         uses: ./.github/actions/setup-bun
 
-      - name: run
-        run: |
-          git config --global user.email "bot@opencode.ai"
-          git config --global user.name "opencode"
-          bun turbo test
-        env:
-          CI: true
+       - name: Cache dependencies
+         uses: actions/cache@v4
+         with:
+           path: |
+             ~/.bun/install/cache
+             node_modules
+           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+           restore-keys: |
+             ${{ runner.os }}-bun-
+
+       - name: Install dependencies
+         run: bun install
+
+       - name: Validate build
+         run: bun run build
+         working-directory: packages/opencode
+
+       - name: Run typecheck
+         run: bun run typecheck
+
+      - name: Run unit tests
+        run: bun run test:unit
+
+      - name: Run integration tests
+        run: bun run test:integration
+
+      - name: Run E2E tests
+        run: bun run test:e2e
+
+       - name: Run tests with coverage
+         run: bun run test:coverage
+
+       # Note: Bun's coverage is experimental and doesn't generate standard reports yet
+       # - name: Upload coverage reports
+       #   uses: codecov/codecov-action@v4
+       #   with:
+       #     file: ./packages/opencode/coverage/lcov.info
+       #     flags: unittests
+       #     name: codecov-umbrella
+       #     fail_ci_if_error: false
+
+       # - name: Check coverage thresholds
+       #   run: |
+       #     bun run test:coverage
+       #     # Check if coverage meets minimum thresholds
+       #     if [ -f packages/opencode/coverage/coverage-summary.json ]; then
+       #       COVERAGE=$(cat packages/opencode/coverage/coverage-summary.json | jq '.total.lines.pct')
+       #       if (( $(echo "$COVERAGE < 80" | bc -l) )); then
+       #         echo "Coverage $COVERAGE% is below 80% threshold"
+       #         exit 1
+       #       fi
+       #     fi
+       #   env:
+       #     CI: true

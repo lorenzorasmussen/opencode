@@ -54,7 +54,10 @@ export namespace Filesystem {
           followSymlinks: true,
           dot: true,
         })) {
-          result.push(match)
+          // Explicitly filter out results that are not within the intended search path
+          if (match.startsWith(start) || (stop && match.startsWith(stop))) {
+            result.push(match)
+          }
         }
       } catch {
         // Skip invalid glob patterns

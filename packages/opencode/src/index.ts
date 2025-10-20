@@ -113,15 +113,15 @@ try {
     })
   }
 
-  if (e instanceof ResolveMessage) {
+  if (e && typeof e === "object" && "specifier" in e) {
     Object.assign(data, {
-      name: e.name,
-      message: e.message,
-      code: e.code,
-      specifier: e.specifier,
-      referrer: e.referrer,
-      position: e.position,
-      importKind: e.importKind,
+      name: (e as any).name,
+      message: (e as any).message,
+      code: (e as any).code,
+      specifier: (e as any).specifier,
+      referrer: (e as any).referrer,
+      position: (e as any).position,
+      importKind: (e as any).importKind,
     })
   }
   Log.Default.error("fatal", data)

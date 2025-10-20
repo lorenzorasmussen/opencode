@@ -5,6 +5,14 @@ import { jwtVerify, createRemoteJWKSet } from "jose"
 import { createAppAuth } from "@octokit/auth-app"
 import { Octokit } from "@octokit/rest"
 import { Resource } from "sst"
+import {
+  shareCreateSchema,
+  shareDeleteSchema,
+  shareSyncSchema,
+  exchangePatSchema,
+  idSchema,
+  SHORT_NAME_LENGTH,
+} from "./validation"
 
 type Env = {
   SYNC_SERVER: DurableObjectNamespace<SyncServer>
@@ -12,6 +20,9 @@ type Env = {
   WEB_DOMAIN: string
 }
 
+/**
+ * SyncServer Durable Object for handling real-time session sharing
+ */
 export class SyncServer extends DurableObject<Env> {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env)
@@ -35,9 +46,9 @@ export class SyncServer extends DurableObject<Env> {
     })
   }
 
-  async webSocketMessage(ws, message) {}
+  async webSocketMessage(ws: WebSocket, message: any) {}
 
-  async webSocketClose(ws, code, reason, wasClean) {
+  async webSocketClose(ws: WebSocket, code: number, reason: string, wasClean: boolean) {
     ws.close(code, "Durable Object is closing WebSocket")
   }
 
@@ -108,69 +119,78 @@ export class SyncServer extends DurableObject<Env> {
   }
 
   static shortName(id: string) {
-    return id.substring(id.length - 8)
+    return id.substring(id.length - SHORT_NAME_LENGTH)
   }
 }
 
 export default new Hono<{ Bindings: Env }>()
   .get("/", (c) => c.text("Hello, world!"))
   .post("/share_create", async (c) => {
-    const body = await c.req.json<{ sessionID: string }>()
-    const sessionID = body.sessionID
-    const short = SyncServer.shortName(sessionID)
-    const id = c.env.SYNC_SERVER.idFromName(short)
-    const stub = c.env.SYNC_SERVER.get(id)
-    const secret = await stub.share(sessionID)
-    return c.json({
-      secret,
-      url: `https://${c.env.WEB_DOMAIN}/s/${short}`,
-    })
+    try {
+      const body = shareCreateSchema.parse(await c.req.json())
+      const sessionID = body.sessionID
+      const short = SyncServer.shortName(sessionID)
+      const id = c.env.SYNC_SERVER.idFromName(short)
+      const stub = c.env.SYNC_SERVER.get(id)
+      const secret = await stub.share(sessionID)
+      return c.json({
+        secret,
+        url: `https://${c.env.WEB_DOMAIN}/s/${short}`,
+      })
+    } catch (e) {
+      return c.json({ error: "Invalid input" }, { status: 400 })
+    }
   })
   .post("/share_delete", async (c) => {
-    const body = await c.req.json<{ sessionID: string; secret: string }>()
-    const sessionID = body.sessionID
-    const secret = body.secret
-    const id = c.env.SYNC_SERVER.idFromName(SyncServer.shortName(sessionID))
-    const stub = c.env.SYNC_SERVER.get(id)
-    await stub.assertSecret(secret)
-    await stub.clear()
-    return c.json({})
+    try {
+      const body = shareDeleteSchema.parse(await c.req.json())
+      const sessionID = body.sessionID
+      const secret = body.secret
+      const id = c.env.SYNC_SERVER.idFromName(SyncServer.shortName(sessionID))
+      const stub = c.env.SYNC_SERVER.get(id)
+      await stub.assertSecret(secret)
+      await stub.clear()
+      return c.json({})
+    } catch (e) {
+      return c.json({ error: "Invalid input" }, { status: 400 })
+    }
   })
   .post("/share_delete_admin", async (c) => {
+    const adminToken = c.req.header("X-Admin-Token")
+    if (!adminToken || adminToken !== Resource.ADMIN_SECRET.value) {
+      return c.json({ error: "Unauthorized" }, { status: 401 })
+    }
     const id = c.env.SYNC_SERVER.idFromName("oVF8Rsiv")
     const stub = c.env.SYNC_SERVER.get(id)
     await stub.clear()
     return c.json({})
   })
   .post("/share_sync", async (c) => {
-    const body = await c.req.json<{
-      sessionID: string
-      secret: string
-      key: string
-      content: any
-    }>()
-    const name = SyncServer.shortName(body.sessionID)
-    const id = c.env.SYNC_SERVER.idFromName(name)
-    const stub = c.env.SYNC_SERVER.get(id)
-    await stub.assertSecret(body.secret)
-    await stub.publish(body.key, body.content)
-    return c.json({})
+    try {
+      const body = shareSyncSchema.parse(await c.req.json())
+      const name = SyncServer.shortName(body.sessionID)
+      const id = c.env.SYNC_SERVER.idFromName(name)
+      const stub = c.env.SYNC_SERVER.get(id)
+      await stub.assertSecret(body.secret)
+      await stub.publish(body.key, body.content)
+      return c.json({})
+    } catch (e) {
+      return c.json({ error: "Invalid input" }, { status: 400 })
+    }
   })
   .get("/share_poll", async (c) => {
     const upgradeHeader = c.req.header("Upgrade")
     if (!upgradeHeader || upgradeHeader !== "websocket") {
-      return c.text("Error: Upgrade header is required", { status: 426 })
+      return c.json({ error: "Upgrade header is required" }, { status: 426 })
     }
     const id = c.req.query("id")
-    console.log("share_poll", id)
-    if (!id) return c.text("Error: Share ID is required", { status: 400 })
+    if (!id || !idSchema.safeParse(id).success) return c.json({ error: "Invalid or missing share ID" }, { status: 400 })
     const stub = c.env.SYNC_SERVER.get(c.env.SYNC_SERVER.idFromName(id))
     return stub.fetch(c.req.raw)
   })
   .get("/share_data", async (c) => {
     const id = c.req.query("id")
-    console.log("share_data", id)
-    if (!id) return c.text("Error: Share ID is required", { status: 400 })
+    if (!id || !idSchema.safeParse(id).success) return c.json({ error: "Invalid or missing share ID" }, { status: 400 })
     const stub = c.env.SYNC_SERVER.get(c.env.SYNC_SERVER.idFromName(id))
     const data = await stub.getData()
 
@@ -197,7 +217,7 @@ export default new Hono<{ Bindings: Env }>()
     return c.json({ info, messages })
   })
   /**
-   * Used by the GitHub action to get GitHub installation access token given the OIDC token
+   * Exchanges GitHub OIDC token for installation access token
    */
   .post("/exchange_github_app_token", async (c) => {
     const EXPECTED_AUDIENCE = "opencode-github-action"
@@ -217,6 +237,7 @@ export default new Hono<{ Bindings: Env }>()
         audience: EXPECTED_AUDIENCE,
       })
       const sub = payload.sub // e.g. 'repo:my-org/my-repo:ref:refs/heads/main'
+      if (!sub) throw new Error("Invalid token payload")
       const parts = sub.split(":")[1].split("/")
       owner = parts[0]
       repo = parts[1]
@@ -245,11 +266,11 @@ export default new Hono<{ Bindings: Env }>()
    * Used by the GitHub action to get GitHub installation access token given user PAT token (used when testing `opencode github run` locally)
    */
   .post("/exchange_github_app_token_with_pat", async (c) => {
-    const body = await c.req.json<{ owner: string; repo: string }>()
-    const owner = body.owner
-    const repo = body.repo
-
     try {
+      const body = exchangePatSchema.parse(await c.req.json())
+      const owner = body.owner
+      const repo = body.repo
+
       // get Authorization header
       const authHeader = c.req.header("Authorization")
       const token = authHeader?.replace(/^Bearer /, "")
@@ -258,7 +279,7 @@ export default new Hono<{ Bindings: Env }>()
       // Verify permissions
       const userClient = new Octokit({ auth: token })
       const { data: repoData } = await userClient.repos.get({ owner, repo })
-      if (!repoData.permissions.admin && !repoData.permissions.push && !repoData.permissions.maintain)
+      if (!repoData.permissions?.admin && !repoData.permissions?.push && !repoData.permissions?.maintain)
         throw new Error("User does not have write permissions")
 
       // Get installation token
@@ -291,6 +312,14 @@ export default new Hono<{ Bindings: Env }>()
   .get("/get_github_app_installation", async (c) => {
     const owner = c.req.query("owner")
     const repo = c.req.query("repo")
+    if (
+      !owner ||
+      !repo ||
+      !z.string().min(1).max(100).safeParse(owner).success ||
+      !z.string().min(1).max(100).safeParse(repo).success
+    ) {
+      return c.json({ error: "Invalid or missing owner/repo" }, { status: 400 })
+    }
 
     const auth = createAppAuth({
       appId: Resource.GITHUB_APP_ID.value,

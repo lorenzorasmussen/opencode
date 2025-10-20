@@ -7,6 +7,12 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "bun test",
+    "test:unit": "bun test packages/opencode/test/unit",
+    "test:integration": "bun test packages/opencode/test/integration",
+    "test:e2e": "bun test packages/opencode/test/e2e",
+    "test:coverage": "bun test --coverage",
+    "test:watch": "bun test --watch",
+    "test:ci": "bun test --coverage --verbose",
     "build": "./script/build.ts",
     "dev": "bun run ./src/index.ts"
   },
@@ -28,7 +34,9 @@
     "@types/yargs": "17.0.33",
     "typescript": "catalog:",
     "vscode-languageserver-types": "3.17.5",
-    "zod-to-json-schema": "3.24.5"
+    "zod-to-json-schema": "3.24.5",
+    "@types/supertest": "^6.0.2",
+    "supertest": "^7.0.0"
   },
   "dependencies": {
     "@clack/prompts": "1.0.0-alpha.1",

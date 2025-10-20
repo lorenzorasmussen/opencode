@@ -1,0 +1,81 @@
+Advanced documentation orchestration with GitHub Spec-Kit integration, automated spec generation, living documentation, and intelligent update detection
+
+## Commands
+
+### Spec-Kit Integration
+- `spec-kit-init`: Initialize Spec-Kit in the current project
+- `spec-kit-check`: Check Spec-Kit installation status
+- `spec-kit-spec`: Generate or update a feature specification
+- `spec-kit-plan`: Generate technical implementation plan
+- `spec-kit-tasks`: Break down plan into actionable tasks
+- `spec-kit-sync`: Sync specifications with codebase changes
+- `spec-kit-audit`: Audit specification completeness and health
+- `spec-kit-dashboard`: Show living documentation dashboard
+- `spec-kit-export`: Export specifications to various formats
+
+## Parameters
+
+- `command`: The Spec-Kit command to execute
+- `featureId`: Feature identifier for spec operations (required for spec, plan, tasks)
+- `type`: Documentation type (api, architecture, user-guide, adr, spec)
+- `update`: Whether to update existing documentation
+- `publish`: Whether to publish documentation
+- `specKit`: Enable Spec-Kit integration
+
+## Examples
+
+Initialize Spec-Kit:
+```
+{
+  "command": "spec-kit-init"
+}
+```
+
+Generate a new feature spec:
+```
+{
+  "command": "spec-kit-spec",
+  "featureId": "user-authentication"
+}
+```
+
+Update existing spec:
+```
+{
+  "command": "spec-kit-spec",
+  "featureId": "order-management",
+  "update": true
+}
+```
+
+Generate implementation plan:
+```
+{
+  "command": "spec-kit-plan",
+  "featureId": "webhook-notifications"
+}
+```
+
+Show documentation dashboard:
+```
+{
+  "command": "spec-kit-dashboard"
+}
+```
+
+## Integration Features
+
+- **Living Documentation**: Specs automatically stay synchronized with code
+- **Intelligent Drift Detection**: AI detects when implementation diverges from spec
+- **Automated Updates**: Critical changes trigger automatic spec regeneration
+- **PR Integration**: Spec updates go through pull request review process
+- **Multi-Agent Support**: Works with GitHub Copilot, Claude Code, Gemini CLI
+- **Version Control**: Full audit trail of specification changes
+
+## Workflow
+
+1. **Specify**: Define what & why (goals, users, requirements)
+2. **Plan**: Define how (architecture, tech stack, dependencies)
+3. **Tasks**: Break into actionable work items
+4. **Implement**: Build to spec with continuous sync
+5. **Monitor**: Track spec-to-code alignment and update as needed
