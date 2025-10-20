@@ -1,0 +1,50 @@
+name: Snyk Security Checks
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  security-scan:
+    name: Security Vulnerability Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Snyk to check for vulnerabilities
+        id: snyk-test
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          npx snyk test --json > snyk-results.json || echo "snyk_failed=true" >> $GITHUB_OUTPUT
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+
+      - name: Generate Snyk report
+        id: report
+        uses: actions/github-script@v7
+        env:
+          SNYK_FAILED: ${{ steps.snyk-test.outputs.snyk_failed }}
+          EXIT_CODE: ${{ steps.snyk-test.outputs.exit_code }}
+        with:
+          script: |
+            const fs = require('fs');
+            let vulnerabilities = [];
+
+            try {
+              const results = JSON.parse(fs.readFileSync('snyk-results.json', 'utf8'));
+              vulnerabilities = results.vulnerabilities || [];
+            } catch (e) {
+              console.log('Could not parse Snyk results:', e.message);

@@ -5,7 +5,7 @@ import { MessageV2 } from "./message-v2"
 import { Session } from "."
 import { Log } from "../util/log"
 import { splitWhen } from "remeda"
-import { Storage } from "../storage/storage"
+import { Storage } from "../storage/sqlite"
 import { Bus } from "../bus"
 
 export namespace SessionRevert {
@@ -81,7 +81,7 @@ export namespace SessionRevert {
     const [preserve, remove] = splitWhen(msgs, (x) => x.info.id === messageID)
     msgs = preserve
     for (const msg of remove) {
-      await Storage.remove(["message", sessionID, msg.info.id])
+      await Storage.remove(["messages", sessionID, msg.info.id])
       await Bus.publish(MessageV2.Event.Removed, { sessionID: sessionID, messageID: msg.info.id })
     }
     const last = preserve.at(-1)
@@ -90,7 +90,7 @@ export namespace SessionRevert {
       const [preserveParts, removeParts] = splitWhen(last.parts, (x) => x.id === partID)
       last.parts = preserveParts
       for (const part of removeParts) {
-        await Storage.remove(["part", last.info.id, part.id])
+        await Storage.remove(["parts", last.info.id, part.id])
         await Bus.publish(MessageV2.Event.PartRemoved, {
           sessionID: sessionID,
           messageID: last.info.id,

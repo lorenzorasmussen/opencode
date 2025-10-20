@@ -2,7 +2,7 @@ import z from "zod/v4"
 import { Filesystem } from "../util/filesystem"
 import path from "path"
 import { $ } from "bun"
-import { Storage } from "../storage/storage"
+import { Storage } from "../storage/sqlite"
 import { Log } from "../util/log"
 
 export namespace Project {
@@ -35,7 +35,7 @@ export namespace Project {
           created: Date.now(),
         },
       }
-      await Storage.write<Info>(["project", "global"], project)
+      await Storage.write<Info>(["projects", "global"], project)
       return project
     }
     let worktree = path.dirname(git)
@@ -59,7 +59,7 @@ export namespace Project {
           created: Date.now(),
         },
       }
-      await Storage.write<Info>(["project", "global"], project)
+      await Storage.write<Info>(["projects", "global"], project)
       return project
     }
     worktree = await $`git rev-parse --path-format=absolute --show-toplevel`
@@ -76,18 +76,18 @@ export namespace Project {
         created: Date.now(),
       },
     }
-    await Storage.write<Info>(["project", id], project)
+    await Storage.write<Info>(["projects", id], project)
     return project
   }
 
   export async function setInitialized(projectID: string) {
-    await Storage.update<Info>(["project", projectID], (draft) => {
+    await Storage.update<Info>(["projects", projectID], (draft) => {
       draft.time.initialized = Date.now()
     })
   }
 
   export async function list() {
-    const keys = await Storage.list(["project"])
+    const keys = await Storage.list(["projects"])
     return await Promise.all(keys.map((x) => Storage.read<Info>(x)))
   }
 }

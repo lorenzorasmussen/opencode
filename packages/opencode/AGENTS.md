@@ -23,5 +23,5 @@
 - **Context**: Pass `sessionID` in tool context, use `App.provide()` for DI
 - **Validation**: All inputs validated with Zod schemas
 - **Logging**: Use `Log.create({ service: "name" })` pattern
-- **Storage**: Use `Storage` namespace for persistence
+- **Storage**: The `Storage` namespace, backed by a SQLite database, is used for persistence.
 - **API Client**: Go TUI communicates with TypeScript server via stainless SDK. When adding/modifying server endpoints in `packages/opencode/src/server/server.ts`, ask the user to generate a new client SDK to proceed with client-side changes.

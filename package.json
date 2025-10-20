@@ -7,6 +7,15 @@
   "scripts": {
     "dev": "bun run packages/opencode/src/index.ts",
     "typecheck": "bun turbo typecheck",
+    "test": "bun test",
+    "test:unit": "bun test packages/opencode/test/unit",
+    "test:integration": "bun test packages/opencode/test/integration",
+    "test:e2e": "bun test packages/opencode/test/e2e",
+    "test:coverage": "bun test --coverage",
+    "build": "bun run build",
+    "lint": "eslint packages/opencode/src",
+    "format": "./script/format.ts",
+    "format:check": "./script/format.ts --check",
     "prepare": "husky"
   },
   "workspaces": {

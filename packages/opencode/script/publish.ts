@@ -115,7 +115,7 @@ if (!snapshot) {
     `  cd "opencode-\${pkgver}"`,
     `  bun install`,
     "  cd packages/tui",
-    `  CGO_ENABLED=0 go build -ldflags="-s -w -X main.Version=\${pkgver}" -o tui cmd/opencode/main.go`,
+    `  CGO_ENABLED=0 go build -ldflags="-s -X main.Version=\${pkgver}" -o tui cmd/opencode/main.go`,
     "  cd ../opencode",
     `  bun build --define OPENCODE_TUI_PATH="'$(realpath ../tui/tui)'" --define OPENCODE_VERSION="'\${pkgver}'" --compile --target=bun-linux-x64 --outfile=opencode ./src/index.ts`,
     "}",

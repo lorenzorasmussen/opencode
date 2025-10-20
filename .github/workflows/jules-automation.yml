@@ -10,12 +10,12 @@ on:
   workflow_dispatch:
     inputs:
       issue_number:
-        description: 'Issue number to process'
+        description: "Issue number to process"
         required: true
         type: number
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: "20"
 
 jobs:
   # Job 1: Trigger Jules to work on the issue
@@ -29,7 +29,7 @@ jobs:
     outputs:
       issue_number: ${{ steps.get-issue.outputs.number }}
       pr_created: ${{ steps.check-pr.outputs.created }}
-    
+
     steps:
       - name: Get Issue Number
         id: get-issue
@@ -99,7 +99,7 @@ jobs:
               head: `${context.repo.owner}:jules/issue-${{ steps.get-issue.outputs.number }}`,
               state: 'open'
             });
-            
+
             if (prs.data.length > 0) {
               core.setOutput('created', 'true');
               core.setOutput('pr_number', prs.data[0].number);
@@ -115,7 +115,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: trigger-jules
     if: needs.trigger-jules.outputs.pr_created == 'true'
-    
+
     steps:
       - name: Checkout PR
         uses: actions/checkout@v4
@@ -157,10 +157,10 @@ jobs:
             const testFailed = process.env.TEST_RESULT === 'true';
             const typecheckFailed = process.env.TYPECHECK_RESULT === 'true';
             const formatFailed = process.env.FORMAT_RESULT === 'true';
-            
+
             const allPassed = !testFailed && !typecheckFailed && !formatFailed;
             core.setOutput('all_passed', allPassed.toString());
-            
+
             return {
               allPassed,
               testFailed,
@@ -171,11 +171,15 @@ jobs:
       - name: Auto-merge PR
         if: steps.evaluate.outputs.all_passed == 'true'
         uses: actions/github-script@v7
+        env:
+          PR_NUMBER: ${{ needs.trigger-jules.outputs.pr_number }}
+          ISSUE_NUMBER: ${{ needs.trigger-jules.outputs.issue_number }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const prNumber = ${{ needs.trigger-jules.outputs.pr_number }};
-            
+            const prNumber = process.env.PR_NUMBER;
+            const issueNumber = process.env.ISSUE_NUMBER;
+
             // Add label to indicate auto-merge
             await github.rest.issues.addLabels({
               owner: context.repo.owner,
@@ -183,7 +187,7 @@ jobs:
               issue_number: prNumber,
               labels: ['auto-merged', 'jules-resolved']
             });
-            
+
             // Approve the PR
             await github.rest.pulls.createReview({
               owner: context.repo.owner,
@@ -192,7 +196,7 @@ jobs:
               event: 'APPROVE',
               body: '✅ All checks passed. Auto-approving for merge.'
             });
-            
+
             // Merge the PR
             try {
               await github.rest.pulls.merge({
@@ -200,15 +204,15 @@ jobs:
                 repo: context.repo.repo,
                 pull_number: prNumber,
                 merge_method: 'squash',
-                commit_title: `fix: resolve issue #${{ needs.trigger-jules.outputs.issue_number }} (auto-merged by Jules)`,
-                commit_message: `Automatically resolved by Jules.\n\nCloses #${{ needs.trigger-jules.outputs.issue_number }}`
+                commit_title: `fix: resolve issue #${issueNumber} (auto-merged by Jules)`,
+                commit_message: `Automatically resolved by Jules.\n\nCloses #${issueNumber}`
               });
-              
+
               // Comment on success
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: ${{ needs.trigger-jules.outputs.issue_number }},
+                issue_number: issueNumber,
                 body: '✅ PR successfully merged! All checks passed. Changes are now in the main branch.'
               });
             } catch (error) {
@@ -218,17 +222,20 @@ jobs:
       - name: Comment on Failure
         if: steps.evaluate.outputs.all_passed != 'true'
         uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER: ${{ needs.trigger-jules.outputs.issue_number }}
         with:
           script: |
-            const prNumber = ${{ needs.trigger-jules.outputs.pr_number }};
-            
+            const prNumber = process.env.PR_NUMBER;
+            const reportUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: prNumber,
-              body: `⚠️ Automated merge blocked due to failing checks. Please review the PR manually.\n\nCheck the workflow run for details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`
+              body: `⚠️ Automated merge blocked due to failing checks. Please review the PR manually.\n\nCheck the workflow run for details: ${reportUrl}`
             });
-            
+
             // Add label to indicate manual review needed
             await github.rest.issues.addLabels({
               owner: context.repo.owner,
@@ -243,10 +250,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [trigger-jules, auto-merge-pr]
     if: always() && needs.auto-merge-pr.result == 'success'
-    
+
     steps:
       - name: Wait for Post-Merge Checks
-        run: sleep 60  # Wait 1 minute for any post-merge checks
+        run: sleep 60 # Wait 1 minute for any post-merge checks
 
       - name: Check Recent Workflow Runs
         id: check-workflows
@@ -260,44 +267,50 @@ jobs:
               per_page: 10,
               status: 'completed'
             });
-            
+
             // Check if any critical workflows failed
             const recentFailures = runs.data.workflow_runs.filter(run => 
               run.conclusion === 'failure' && 
               ['test.yml', 'deploy.yml'].includes(run.path) &&
               new Date(run.created_at) > new Date(Date.now() - 5 * 60 * 1000) // Last 5 minutes
             );
-            
+
             core.setOutput('has_failures', recentFailures.length > 0);
             return recentFailures.length;
 
       - name: Rollback if Failures Detected
         if: steps.check-workflows.outputs.has_failures == 'true'
         uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER: ${{ needs.trigger-jules.outputs.issue_number }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             // Create a revert PR
-            const issue_number = ${{ needs.trigger-jules.outputs.issue_number }};
-            
+            const issue_number = process.env.ISSUE_NUMBER;
+
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issue_number,
               body: `🔄 **ROLLBACK INITIATED**\n\nPost-merge checks detected failures. The changes have been marked for rollback.\n\nPlease review the failing workflows and create a manual revert if needed.`
             });
-            
+
             // You can add automatic revert commit creation here if desired
-            // For now, we're alerting and requiring manual intervention
+             // For now, we're alerting and requiring manual intervention
 
       - name: Confirm Success
         if: steps.check-workflows.outputs.has_failures != 'true'
         uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER: ${{ needs.trigger-jules.outputs.issue_number }}
         with:
           script: |
+            const issue_number = process.env.ISSUE_NUMBER;
+
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: ${{ needs.trigger-jules.outputs.issue_number }},
+              issue_number: issue_number,
               body: '✅ Post-merge monitoring complete. No issues detected. The changes are stable!'
             });

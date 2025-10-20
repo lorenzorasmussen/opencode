@@ -1,6 +1,6 @@
 import z from "zod/v4"
 import { Bus } from "../bus"
-import { Storage } from "../storage/storage"
+import { Storage } from "../storage/sqlite"
 
 export namespace Todo {
   export const Info = z
@@ -24,11 +24,11 @@ export namespace Todo {
   }
 
   export async function update(input: { sessionID: string; todos: Info[] }) {
-    await Storage.write(["todo", input.sessionID], input.todos)
+    await Storage.write(["todos", input.sessionID], input.todos)
     Bus.publish(Event.Updated, input)
   }
 
   export async function get(sessionID: string) {
-    return Storage.read<Info[]>(["todo", sessionID]) ?? []
+    return Storage.read<Info[]>(["todos", sessionID]) ?? []
   }
 }

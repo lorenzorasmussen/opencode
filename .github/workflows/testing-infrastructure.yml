@@ -1,0 +1,164 @@
+name: Testing Infrastructure
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  testing-infrastructure:
+    name: Testing Infrastructure & Quality Gates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: ./.github/actions/setup-bun
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Setup test environment
+        run: |
+          # Create test environment variables
+          echo "TEST_ENV=true" >> $GITHUB_ENV
+          echo "CI=true" >> $GITHUB_ENV
+
+      - name: Run type checking
+        run: bun run typecheck
+
+      - name: Run linting
+        run: bun run lint || echo "lint_failed=true" >> $GITHUB_OUTPUT
+        continue-on-error: true
+        id: lint
+
+      - name: Run unit tests
+        run: bun run test:unit
+        id: unit-tests
+
+      - name: Run integration tests
+        run: bun run test:integration
+        id: integration-tests
+
+      - name: Run E2E tests
+        run: bun run test:e2e
+        id: e2e-tests
+
+      - name: Generate test coverage
+        run: bun run test:coverage
+        id: coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./packages/opencode/coverage/lcov.info
+          flags: testing-infrastructure
+          name: codecov-testing
+          fail_ci_if_error: false
+
+      - name: Check test results
+        run: |
+          # Check if all tests passed
+          if [ "${{ steps.unit-tests.outcome }}" != "success" ]; then
+            echo "Unit tests failed"
+            exit 1
+          fi
+
+          if [ "${{ steps.integration-tests.outcome }}" != "success" ]; then
+            echo "Integration tests failed"
+            exit 1
+          fi
+
+          if [ "${{ steps.e2e-tests.outcome }}" != "success" ]; then
+            echo "E2E tests failed"
+            exit 1
+          fi
+
+      - name: Quality gate - Coverage check
+        run: |
+          if [ -f packages/opencode/coverage/coverage-summary.json ]; then
+            # Check line coverage
+            LINES=$(cat packages/opencode/coverage/coverage-summary.json | jq '.total.lines.pct')
+            FUNCTIONS=$(cat packages/opencode/coverage/coverage-summary.json | jq '.total.functions.pct')
+            BRANCHES=$(cat packages/opencode/coverage/coverage-summary.json | jq '.total.branches.pct')
+            STATEMENTS=$(cat packages/opencode/coverage/coverage-summary.json | jq '.total.statements.pct')
+
+            echo "Coverage Report:"
+            echo "Lines: $LINES%"
+            echo "Functions: $FUNCTIONS%"
+            echo "Branches: $BRANCHES%"
+            echo "Statements: $STATEMENTS%"
+
+            # Check minimum thresholds
+            if (( $(echo "$LINES < 80" | bc -l) )); then
+              echo "❌ Line coverage $LINES% is below 80% threshold"
+              exit 1
+            fi
+
+            if (( $(echo "$FUNCTIONS < 80" | bc -l) )); then
+              echo "❌ Function coverage $FUNCTIONS% is below 80% threshold"
+              exit 1
+            fi
+
+            if (( $(echo "$BRANCHES < 70" | bc -l) )); then
+              echo "❌ Branch coverage $BRANCHES% is below 70% threshold"
+              exit 1
+            fi
+
+            if (( $(echo "$STATEMENTS < 80" | bc -l) )); then
+              echo "❌ Statement coverage $STATEMENTS% is below 80% threshold"
+              exit 1
+            fi
+
+            echo "✅ All coverage thresholds met"
+          else
+            echo "❌ Coverage report not found"
+            exit 1
+          fi
+
+      - name: Quality gate - Lint check
+        if: steps.lint.outputs.lint_failed == 'true'
+        run: |
+          echo "❌ Linting failed - please fix code quality issues"
+          exit 1
+
+      - name: Generate test summary
+        run: |
+          echo "## 🧪 Testing Infrastructure Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Unit Tests: ${{ steps.unit-tests.outcome == 'success' && 'Passed' || 'Failed' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Integration Tests: ${{ steps.integration-tests.outcome == 'success' && 'Passed' || 'Failed' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ E2E Tests: ${{ steps.e2e-tests.outcome == 'success' && 'Passed' || 'Failed' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Quality Gates" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Type Check: ${{ steps.typecheck.outcome == 'success' && 'Passed' || 'Failed' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Linting: ${{ steps.lint.outputs.lint_failed != 'true' && 'Passed' || 'Failed' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Coverage: Thresholds met" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Coverage Details" >> $GITHUB_STEP_SUMMARY
+          if [ -f packages/opencode/coverage/coverage-summary.json ]; then
+            LINES=$(cat packages/opencode/coverage/coverage-summary.json | jq '.total.lines.pct')
+            FUNCTIONS=$(cat packages/opencode/coverage/coverage-summary.json | jq '.total.functions.pct')
+            BRANCHES=$(cat packages/opencode/coverage/coverage-summary.json | jq '.total.branches.pct')
+            echo "- Lines: $LINES%" >> $GITHUB_STEP_SUMMARY
+            echo "- Functions: $FUNCTIONS%" >> $GITHUB_STEP_SUMMARY
+            echo "- Branches: $BRANCHES%" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ github.run_id }}
+          path: |
+            packages/opencode/coverage/
+            packages/opencode/test-results.json
+          retention-days: 30

@@ -1,0 +1,39 @@
+#!/usr/bin/env sh
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📝 Validating commit message"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+npx --no -- commitlint --edit "$1"
+
+if [ $? -eq 0 ]; then
+    echo "✅ Commit message valid"
+else
+    echo ""
+    echo "❌ Invalid commit message format!"
+    echo ""
+    echo "Required format:"
+    echo "  <type>(<scope>): <subject>"
+    echo ""
+    echo "Valid types:"
+    echo "  feat     - New feature"
+    echo "  fix      - Bug fix"
+    echo "  docs     - Documentation only"
+    echo "  style    - Formatting (no code change)"
+    echo "  refactor - Code restructuring"
+    echo "  perf     - Performance improvement"
+    echo "  test     - Adding tests"
+    echo "  build    - Build system changes"
+    echo "  ci       - CI configuration"
+    echo "  chore    - Maintenance"
+    echo ""
+    echo "Examples:"
+    echo "  ✓ feat(auth): add JWT authentication"
+    echo "  ✓ fix(api): resolve null pointer exception"
+    echo "  ✓ docs: update README installation steps"
+    echo "  ✗ added some stuff (INVALID)"
+    echo ""
+    exit 1
+fi
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
