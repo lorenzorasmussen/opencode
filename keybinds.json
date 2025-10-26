@@ -1,0 +1,19 @@
+{
+  "global": {
+    "ctrl+c": "interrupt",
+    "ctrl+d": "exit",
+    "ctrl+l": "clear"
+  },
+  "editor": {
+    "ctrl+s": "save",
+    "ctrl+z": "undo",
+    "ctrl+y": "redo",
+    "ctrl+f": "find",
+    "ctrl+r": "replace"
+  },
+  "navigation": {
+    "ctrl+n": "new",
+    "ctrl+o": "open",
+    "ctrl+w": "close"
+  }
+}

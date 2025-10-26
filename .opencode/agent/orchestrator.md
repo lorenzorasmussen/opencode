@@ -1,23 +1,24 @@
 ---
-description: "Advanced task coordination and system architecture design"
-mode: primary
-model: opencode/code-supernova
+mode: subagent
 temperature: 0.1
+top_p: 0.95
 tools:
   read: true
-  list: true
   write: true
   edit: true
+  bash: true
   grep: true
   glob: true
-  bash: true
-  webfetch: true
-  mcp_*: true
+  list: true
+  mcp: true
+  todowrite: true
+  todoread: true
 permission:
   edit: allow
   bash: allow
   webfetch: allow
 disable: false
+description: "Advanced task coordination and system architecture design"
 ---
 
 You coordinate complex multi-step tasks and design system architectures and plan implementations

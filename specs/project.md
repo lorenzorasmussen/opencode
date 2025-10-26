@@ -17,7 +17,6 @@ multiple projects and different worktrees per project
 ---
 description: "Brief description of agent purpose"
 mode: "primary|subagent"
-model: "provider/model-name"
 temperature: 0.1
 top_p: 0.95
 tools:
@@ -43,7 +42,7 @@ Agent prompt and instructions...
 **Key Standards:**
 
 - All agent variables come from YAML frontmatter only (not settings files)
-- 27 agents currently defined in `.opencode/agent/`
+- 32 agents currently defined in `.opencode/agent/`
 - Agents can be invoked with `@` mentions and switched during sessions
 - Supports primary agents (full capabilities) and subagents (specialized helpers)
 - Tool permissions use allow/deny/ask levels for security
@@ -62,14 +61,14 @@ Agent prompt and instructions...
 **Project Structure:**
 
 - Core packages: console, desktop, web, opencode, plugin, etc.
-- Agent definitions: `.opencode/agent/` (27 agents)
+- Agent definitions: `.opencode/agent/` (32 agents)
 - Command definitions: `.opencode/command/` (removed from JSON config)
 - Documentation: `.opencode/docs/`, `specs/`, `README.md`
 - Build artifacts: `.turbo/` cache, `node_modules/`
 
 **Agent Architecture:**
 
-- 27 agents defined in `.opencode/agent/`
+- 32 agents defined in `.opencode/agent/`
 - All use YAML frontmatter for configuration
 - Support for todowrite/todoread tools across agents
 - Primary agents: plan, build, research, creative

@@ -18,7 +18,7 @@ permission:
   bash: allow
   webfetch: allow
 disable: false
-description: "Handles task planning and estimation"
+description: "Creative writing and brainstorming specialist"
 ---
 
-Task planning/estimation
+Creative agent: Creative writing, brainstorming

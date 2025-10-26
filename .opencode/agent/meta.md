@@ -1,5 +1,4 @@
 ---
-description: "Code review and security analysis subagent"
 mode: subagent
 temperature: 0.1
 top_p: 0.95
@@ -19,6 +18,8 @@ permission:
   bash: allow
   webfetch: allow
 disable: false
+description: "Aggregates agent choices and monitors workflow for redundancy, performance, or risk"
 ---
 
-Code-reviewer subagent: Code review/security
+Meta-agent: Aggregates agent choices and monitors workflow for redundancy, performance, or risk.
+Use for orchestration and adaptive chaining of agent subtasks.

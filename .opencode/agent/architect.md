@@ -1,5 +1,5 @@
 ---
-description: "Code review and security analysis subagent"
+description: "Specializes in architecture review, standards validation, and high-level system oversight"
 mode: subagent
 temperature: 0.1
 top_p: 0.95
@@ -21,4 +21,5 @@ permission:
 disable: false
 ---
 
-Code-reviewer subagent: Code review/security
+Architect agent: Specializes in architecture review, standards validation, and high-level system oversight.
+Separate from specifier to ensure context isolation.

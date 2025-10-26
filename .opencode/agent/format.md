@@ -1,5 +1,5 @@
 ---
-mode: agent
+mode: subagent
 temperature: 0.1
 top_p: 0.95
 tools:
@@ -18,7 +18,7 @@ permission:
   bash: allow
   webfetch: allow
 disable: false
-description: "Handles task planning and estimation"
+description: "Code formatting subagent"
 ---
 
-Task planning/estimation
+Code formatting

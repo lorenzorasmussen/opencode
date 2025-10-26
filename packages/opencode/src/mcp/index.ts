@@ -131,12 +131,19 @@ export namespace MCP {
         }
       }
 
+      // Verify clients asynchronously to avoid blocking startup
       for (const [key, client] of Object.entries(clients)) {
-        const result = await withTimeout(client.tools(), 5000).catch(() => {})
-        if (!result) {
-          log.warn("mcp client verification failed, removing client", { key })
-          delete clients[key]
-        }
+        withTimeout(client.tools(), 5000)
+          .then((result) => {
+            if (!result) {
+              log.warn("mcp client verification failed, removing client", { key })
+              delete clients[key]
+            }
+          })
+          .catch(() => {
+            log.warn("mcp client verification timed out, removing client", { key })
+            delete clients[key]
+          })
       }
 
       return {

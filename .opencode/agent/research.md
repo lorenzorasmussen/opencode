@@ -18,7 +18,7 @@ permission:
   bash: allow
   webfetch: allow
 disable: false
-description: "Handles task planning and estimation"
+description: "Research and quick Q&A specialist"
 ---
 
-Task planning/estimation
+Research agent: Research, quick Q&A

@@ -41,8 +41,41 @@ case "$filename" in
     ;;
 esac
 
-INSTALL_DIR=$HOME/.opencode/bin
+# --- Start OpenCode Config Migration ---
+# This block moves config from ~/.config/opencode and ~/.opencode to ~/.config/.opencode
+XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
+OPENCODE_CONFIG_DIR="$XDG_CONFIG_HOME/.opencode"
+INSTALL_DIR="$OPENCODE_CONFIG_DIR/bin"
+
+OLD_CONFIG_DIR="$XDG_CONFIG_HOME/opencode"
+OLD_INSTALL_ROOT="$HOME/.opencode"
+
+# Check if old directories exist and are different from the new one
+if [ -d "$OLD_CONFIG_DIR" ] || { [ -d "$OLD_INSTALL_ROOT" ] && [ "$OLD_INSTALL_ROOT" != "$OPENCODE_CONFIG_DIR" ]; }; then
+    echo -e "${GREEN}Migrating opencode config to $OPENCODE_CONFIG_DIR...${NC}"
+    
+    if [ -L "$OPENCODE_CONFIG_DIR" ]; then
+        echo -e "${YELLOW}Removing old symlink at $OPENCODE_CONFIG_DIR${NC}"
+        rm -f "$OPENCODE_CONFIG_DIR"
+    fi
+    
+    mkdir -p "$INSTALL_DIR"
+    
+    if [ -d "$OLD_CONFIG_DIR" ]; then
+        if [ -n "$(ls -A "$OLD_CONFIG_DIR" 2>/dev/null)" ]; then
+            mv "$OLD_CONFIG_DIR"/* "$OPENCODE_CONFIG_DIR/"
+        fi
+        rmdir "$OLD_CONFIG_DIR" 2>/dev/null || true
+    fi
+    
+    if [ -d "$OLD_INSTALL_ROOT" ] && [ "$OLD_INSTALL_ROOT" != "$OPENCODE_CONFIG_DIR" ]; then
+        find "$OLD_INSTALL_ROOT" -mindepth 1 -maxdepth 1 ! -name "bin" -exec mv {} "$OPENCODE_CONFIG_DIR/" \;
+        rm -rf "$OLD_INSTALL_ROOT"
+    fi
+fi
+
 mkdir -p "$INSTALL_DIR"
+# --- End OpenCode Config Migration ---
 
 if [ -z "$requested_version" ]; then
     url="https://github.com/sst/opencode/releases/latest/download/$filename"
