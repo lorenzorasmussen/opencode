@@ -1,0 +1,8 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	worktree = /private/var/folders/jw/zn2b54b53ps5tsfg6d0_2sch0000gn/T/opencode-test-0o64uwe3uukk
+	ignorecase = true
+	precomposeunicode = true

@@ -1,0 +1,26 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Pre-Commit Checks"
+
+# Model Lock Validation
+echo "🔒 Checking model lock..."
+if command -v bun >/dev/null 2>&1; then
+  bun run .dev_hooks/model_lock.v2.ts || exit 1
+else
+  echo "⚠️  Bun not found, skipping model lock validation"
+fi
+
+# Fast lint-staged
+npx lint-staged || exit 1
+
+# Deep secret scan (optional)
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+if [ -n "$STAGED_FILES" ]; then
+  mkdir -p .llm_cache/husky_scan
+  for file in $STAGED_FILES; do [ -f "$file" ] && cp "$file" ".llm_cache/husky_scan/"; done
+  npx trufflehog filesystem --directory .llm_cache/husky_scan --only-verified
+  [ $? -ne 0 ] && { echo "❌ Secrets found!"; exit 1; }
+fi
+
+echo "✅ Pre-commit passed"

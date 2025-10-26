@@ -1,0 +1,47 @@
+title = "Security Secret Detection"
+
+[[rules]]
+id = "openai-api-key"
+description = "OpenAI API Key"
+regex = '''sk-[a-zA-Z0-9]{32,}'''
+keywords = ["sk-"]
+
+[[rules]]
+id = "github-token"
+description = "GitHub Personal Access Token"
+regex = '''ghp_[a-zA-Z0-9]{36}'''
+keywords = ["ghp_"]
+
+[[rules]]
+id = "aws-access-key"
+description = "AWS Access Key ID"
+regex = '''AKIA[0-9A-Z]{16}'''
+keywords = ["AKIA"]
+
+[[rules]]
+id = "stripe-key"
+description = "Stripe Secret Key"
+regex = '''sk_live_[a-zA-Z0-9]{24,}'''
+keywords = ["sk_live_"]
+
+[[rules]]
+id = "private-key"
+description = "Private Key"
+regex = '''-----BEGIN (RSA |DSA |EC )?PRIVATE KEY-----'''
+keywords = ["PRIVATE KEY"]
+
+[[rules]]
+id = "generic-api-key"
+description = "Generic API Key"
+regex = '''(?i)(api[_-]?key|apikey|api[_-]?secret)[\s]*[:=][\s]*['\"]([^'\"]{20,})['\"]'''
+keywords = ["api_key", "apikey", "api_secret"]
+
+[allowlist]
+paths = [
+    "node_modules/",
+    ".git/",
+    "dist/",
+    "build/",
+    ".venv/"
+]
+EOF; gitleaks detect --config=.gitleaks.toml --report-path="$SECURITY_DIR/scans/gitleaks.json" --report-format=json --verbose; GITLEAKS_EXIT=$?; if [ $GITLEAKS_EXIT -eq 0 ]; then echo ""; echo "✅ No secrets detected!"; else echo ""; echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"; echo "🚨 SECRETS DETECTED!"; echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"; echo ""; jq -r '.[] | "File: \(.File):\(.StartLine)\n" + "Secret Type: \(.RuleID)\n" + "Description: \(.Description)\n" + "Match: \(.Match | .[0:50])...\n"' "$SECURITY_DIR/scans/gitleaks.json"; echo ""; echo "⚠️  CRITICAL: Remove secrets immediately!"; echo ""; echo "Steps to remediate:"; echo "  1. Remove secrets from code"; echo "  2. Move to environment variables"; echo "  3. Rotate compromised credentials"; echo "  4. Use secrets manager (Vault, AWS Secrets)"; echo "  5. Add to .gitignore"; echo ""; fi; echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

@@ -1,0 +1,65 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "opencode/code-supernova",
+  "small_model": "opencode/big-pickle",
+  "username": "Lorenzo",
+  "share": "manual",
+  "snapshot": false,
+  "autoupdate": false,
+  "permission": {
+    "edit": "allow",
+    "bash": "ask",
+    "webfetch": "allow"
+  },
+  "tools": {
+    "bash": true,
+    "webfetch": true,
+    "mcp": true
+  },
+  "provider": {
+    "opencode": {
+      "models": {
+        "code-supernova": {
+          "id": "opencode/code-supernova",
+          "name": "Code Supernova"
+        },
+        "grok-code-fast-1": {
+          "id": "opencode/grok-code-fast-1",
+          "name": "Grok Code Fast"
+        },
+        "big-pickle": {
+          "id": "opencode/big-pickle",
+          "name": "Big Pickle"
+        }
+      }
+    },
+    "openrouter": {
+      "models": {
+        "qwen3-coder": {
+          "id": "qwen/qwen3-coder:free",
+          "name": "Qwen3 Coder (Free)"
+        },
+        "mistral-small": {
+          "id": "mistralai/mistral-small-3.2-24b-instruct:free",
+          "name": "Mistral Small 3.2 (Free)"
+        },
+        "text-embedding-ada-002": {
+          "id": "openai/text-embedding-ada-002",
+          "name": "OpenAI Text Embedding Ada 002"
+        },
+        "text-embedding-3-small": {
+          "id": "openai/text-embedding-3-small",
+          "name": "OpenAI Text Embedding 3 Small"
+        },
+        "bge-reranker-base": {
+          "id": "baai/bge-reranker-base",
+          "name": "BGE Reranker Base"
+        },
+        "bge-reranker-large": {
+          "id": "baai/bge-reranker-large",
+          "name": "BGE Reranker Large"
+        }
+      }
+    }
+  }
+}

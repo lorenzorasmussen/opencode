@@ -1,0 +1,36 @@
+name: Auto Merge PRs
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+  pull_request_review:
+    types: [submitted]
+  status: {}
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Auto Merge
+        uses: pascalgn/auto-merge-action@v0.16.4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Merge method: merge, squash, rebase
+          merge_method: squash
+          # Only merge if all required checks pass
+          required_checks: "ci"
+          # Require at least 1 approval
+          approvals_required: 1
+          # Only merge if author is not the same as reviewer
+          author_required: false
+          # Block merge if PR has conflicts
+          block_merge: true
+          # Label to trigger auto-merge
+          merge_label: "auto-merge"
+          # Block merge if PR has these labels
+          blocking_labels: "do-not-merge,work-in-progress"

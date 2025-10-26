@@ -1,0 +1,99 @@
+name: Comprehensive CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 2 * * 1'  # Weekly comprehensive scan
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    name: Code Quality & Security
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: latest
+
+    - name: Install dependencies
+      run: bun install
+
+    # === TYPE CHECKING ===
+    - name: TypeScript Type Check
+      run: bun run tsc --noEmit
+
+    # === LINTING ===
+    - name: ESLint
+      run: bun x eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0
+
+    - name: Prettier Format Check
+      run: bun x prettier --check "**/*.{js,jsx,ts,tsx,json,md}"
+
+    # === SECURITY ===
+    - name: Snyk Dependency Scan
+      run: bun x snyk test --severity-threshold=medium
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+    - name: TruffleHog Secret Scan
+      run: ./bin/trufflehog filesystem --directory . --only-verified --fail
+
+    # === CODE QUALITY ===
+    - name: Spell Check
+      run: |
+        bun x cspell "**/*.{js,ts,md,txt}" --no-progress --no-summary || true
+
+    - name: Commit Message Check
+      if: github.event_name == 'pull_request'
+      run: |
+        bun x commitlint --from ${{ github.event.pull_request.head.sha }}~${{ github.event.pull_request.commits }} --to ${{ github.event.pull_request.head.sha }} --verbose || echo "Commit message check completed"
+
+    # === BUILD ===
+    - name: Build Check
+      run: bun run tsc --noEmit  # Full compilation check
+
+  # === OPTIONAL: PERFORMANCE TESTING ===
+  performance:
+    runs-on: ubuntu-latest
+    needs: quality
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: latest
+
+    - name: Install dependencies
+      run: bun install
+
+    - name: Bundle Analysis
+      run: |
+        bun x rollup --config rollup.config.js --silent || echo "No bundle config found"
+
+    - name: Lighthouse CI (if applicable)
+      run: |
+        # If you have a web app, add Lighthouse CI here
+        echo "Lighthouse CI can be added for web performance testing"
+
+  # === DEPLOYMENT CHECKS ===
+  deploy-check:
+    runs-on: ubuntu-latest
+    needs: quality
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Deployment Readiness
+      run: |
+        echo "✅ All quality checks passed"
+        echo "🚀 Ready for deployment"

@@ -1,0 +1,85 @@
+name: Bulk Merge Branches
+
+on:
+  workflow_dispatch:
+    inputs:
+      branches:
+        description: 'Comma-separated list of branches to merge (e.g., feature/1,feature/2)'
+        required: true
+        type: string
+      target_branch:
+        description: 'Target branch to merge into'
+        required: false
+        default: 'main'
+        type: string
+      create_pr:
+        description: 'Create PR after merge'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  bulk-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_branch }}
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+      - name: Bulk Merge Branches
+        run: |
+          IFS=',' read -ra BRANCHES <<< "${{ inputs.branches }}"
+          MERGE_COMMITS=""
+
+          for branch in "${BRANCHES[@]}"; do
+            branch=$(echo "$branch" | xargs)  # Trim whitespace
+            echo "Merging branch: $branch"
+
+            # Fetch the branch
+            git fetch origin "$branch"
+
+            # Check if branch exists
+            if git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+              # Merge the branch
+              if git merge --no-ff "origin/$branch" -m "Merge branch '$branch' into ${{ inputs.target_branch }}"; then
+                echo "✅ Successfully merged $branch"
+                MERGE_COMMITS="$MERGE_COMMITS- $branch\n"
+              else
+                echo "❌ Failed to merge $branch"
+                git merge --abort
+                exit 1
+              fi
+            else
+              echo "⚠️ Branch $branch not found, skipping"
+            fi
+          done
+
+          echo "Merged branches:"
+          echo -e "$MERGE_COMMITS"
+
+      - name: Push merged changes
+        run: |
+          git push origin ${{ inputs.target_branch }}
+
+      - name: Create PR (if requested)
+        if: ${{ inputs.create_pr == true }}
+        run: |
+          gh pr create \
+            --title "Bulk merge: ${{ inputs.branches }}" \
+            --body "Automated bulk merge of branches: ${{ inputs.branches }}
+
+Merged into: ${{ inputs.target_branch }}
+
+Branches merged:
+${{ env.MERGE_COMMITS }}" \
+            --base ${{ inputs.target_branch }} \
+            --head ${{ inputs.target_branch }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

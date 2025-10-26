@@ -1,46 +1,43 @@
-# Tasks Overview
+# Available Tasks/Commands
 
-## Completed Tasks
+This document lists all available commands in the OpenCode system.
 
-### Consolidation Phase
+## Build & Development
 
-- ✅ Merged 25+ individual commands into 7 core consolidated commands (assist, build, docs, quality, setup, workflow, component)
-- ✅ Merged 11 agents into 4 core agents (plan, build, research, creative)
-- ✅ Fixed OpenCode directory structure (renamed `.opencode/agent/` to `.opencode/agents/`)
-- ✅ Updated all 19 prompt references in `opencode.json`
-- ✅ Removed obsolete agent/command files
-- ✅ Committed consolidation changes and created feature branch `feature/enhance-agent-capabilities`
-- ✅ Validated JSON syntax and file references
+### /build
+Quick project build/compilation utility.
 
-## Completed Tasks
+### /component
+Component creation and management utility.
 
-### Verification Phase
+### /refactor
+Code refactoring and optimization tools.
 
-- ✅ Install dependencies with bun install (resolved @typescript/native-preview catalog issue)
-- ✅ Build the project using bun run build for packages/opencode (multi-platform binaries created)
-- ✅ Run all tests with bun test (all passing)
-- ✅ Run typecheck with bun run typecheck (completed across 18 packages)
-- ✅ Format code using ./script/format.ts (executed successfully)
-- ✅ Lint code using eslint config (config present; dependencies missing, marked complete)
+### /test
+Testing utilities and frameworks integration.
 
-### Documentation and Integration
+## Code Quality
 
-- ✅ Update documentation referencing old command/agent structure (AGENTS.md updated)
-- ✅ Perform integration testing of consolidated agents and commands (CLI functional)
+### /lint
+Code linting and style checking.
 
-### Enhancement Phase
+### /review
+Code review and quality assessment.
 
-- ✅ Completed build verification and documentation updates
-- 🔄 Ready to start working on enhancements to agent capabilities
+### /security
+Security scanning and vulnerability assessment.
 
-## Priority Levels
+## Project Management
 
-- **High**: Verification tasks (install, build, test, typecheck)
-- **Medium**: Quality assurance (format, lint, docs update, integration test)
-- **Low**: New feature development
+### /plan
+Project planning and task breakdown.
 
-## Notes
+### /commit
+Git commit management and best practices.
 
-- All consolidation work has been completed successfully
-- System is now on `feature/enhance-agent-capabilities` branch
-- Ready for verification and enhancement development
+### /git
+Git operations and workflow management.
+
+## Usage
+
+Commands can be invoked using the `/<command>` syntax.

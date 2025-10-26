@@ -3,10 +3,6 @@
 
   "theme": "default",
 
-  "model": "opencode/code-supernova",
-  "small_model": "opencode/code-supernova",
-
-  "username": "Lorenzo",
 
   "share": "manual",
   "autoupdate": true,
@@ -16,7 +12,6 @@
 
   "plugin": [],
 
-  "instructions": ["./**/AGENTS.md", "./**/INSTRUCTIONS.md"],
 
   "keybinds": {
     "leader": "ctrl+x",
@@ -68,7 +63,7 @@
 
   "permission": {
     "edit": "allow",
-    "bash": "ask",
+    "bash": "allow",
     "webfetch": "allow"
   },
 
@@ -97,12 +92,12 @@
         "glob": true,
         "list": true,
         "patch": true,
-        "mcp": true
+        "mcp": false
       },
       "permission": {
         "edit": "allow",
         "bash": "allow",
-        "webfetch": "deny"
+        "webfetch": "allow"
       },
 
       "disable": false
@@ -122,7 +117,7 @@
         "glob": true,
         "list": true,
         "webfetch": true,
-        "mcp": true
+        "mcp": false
       },
       "permission": {
         "edit": "allow",
@@ -134,7 +129,6 @@
     },
     "creative": {
       "description": "Creative writing and brainstorming agent",
-      "model": "openrouter/mistralai/mistral-7b-instruct:free",
       "temperature": 0.8,
       "top_p": 0.95,
       "mode": "primary",
@@ -145,7 +139,7 @@
       "permission": {
         "edit": "allow",
         "bash": "deny",
-        "webfetch": "deny"
+        "webfetch": "allow"
       },
 
       "disable": false
@@ -162,7 +156,7 @@
          "grep": true,
          "glob": true,
          "list": true,
-         "mcp": true
+         "mcp": false
        },
        "permission": {
          "edit": "allow",
@@ -174,7 +168,7 @@
      },
       "permission": {
         "edit": "allow",
-        "bash": "deny",
+        "bash": "allow",
         "webfetch": "allow"
       },
 
@@ -190,21 +184,13 @@
          "grep": true,
          "glob": true,
          "list": true,
-         "mcp": true
+         "mcp": false
        },
        "permission": {
-         "edit": "deny",
-         "bash": "deny",
+         "edit": "allow",
+         "bash": "allow",
          "webfetch": "allow"
        },
-
-       "disable": false
-     },
-      "permission": {
-        "edit": "deny",
-        "bash": "deny",
-        "webfetch": "allow"
-      },
 
       "disable": false
     },
@@ -219,12 +205,12 @@
         "glob": true,
         "list": true,
         "bash": true,
-        "mcp": true
+        "mcp": false
       },
       "permission": {
         "edit": "allow",
         "bash": "allow",
-        "webfetch": "deny"
+        "webfetch": "allow"
       },
 
       "disable": false
@@ -241,7 +227,7 @@
         "grep": true,
         "glob": true,
         "list": true,
-        "mcp": true
+        "mcp": false
       },
       "permission": {
         "edit": "allow",
@@ -264,7 +250,7 @@
         "grep": true,
         "glob": true,
         "list": true,
-        "mcp": true
+        "mcp": false
       },
       "permission": {
         "edit": "allow",
@@ -286,16 +272,15 @@
         "list": true
       },
       "permission": {
-        "edit": "deny",
+        "edit": "allow",
         "bash": "deny",
-        "webfetch": "deny"
+        "webfetch": "allow"
       },
 
       "disable": false
     },
     "code-reviewer": {
       "description": "Reviews code for quality and security",
-      "model": "opencode/grok4-fast",
       "temperature": 0.1,
       "top_p": 0.95,
       "mode": "subagent",
@@ -307,15 +292,14 @@
       },
       "permission": {
         "edit": "allow",
-        "bash": "deny",
-        "webfetch": "deny"
+        "bash": "allow",
+        "webfetch": "allow"
       },
 
       "disable": false
     },
     "edit": {
       "description": "File editing subagent",
-      "model": "opencode/code-supernova",
       "temperature": 0.1,
       "top_p": 0.95,
       "mode": "subagent",
@@ -325,7 +309,7 @@
       },
       "permission": {
         "edit": "allow",
-        "bash": "deny",
+        "bash": "allow",
         "webfetch": "deny"
       },
 
@@ -333,7 +317,6 @@
     },
     "search": {
       "description": "Advanced code and file search subagent",
-      "model": "openrouter/mistralai/mistral-7b-instruct:free",
       "temperature": 0.1,
       "top_p": 0.95,
       "mode": "subagent",
@@ -353,7 +336,6 @@
     },
     "clean-directory": {
       "description": "Advanced directory cleanup and organization subagent",
-      "model": "openrouter/mistralai/mistral-7b-instruct:free",
       "temperature": 0.1,
       "top_p": 0.95,
       "mode": "subagent",
@@ -365,14 +347,13 @@
       "permission": {
         "edit": "allow",
         "bash": "allow",
-        "webfetch": "deny"
+        "webfetch": "allow"
       },
 
       "disable": false
     },
     "format": {
       "description": "Advanced code formatting subagent",
-      "model": "opencode/grok-code-fast-1",
       "temperature": 0.1,
       "top_p": 0.95,
       "mode": "subagent",
@@ -384,14 +365,13 @@
       "permission": {
         "edit": "allow",
         "bash": "allow",
-        "webfetch": "deny"
+        "webfetch": "allow"
       },
 
       "disable": false
     },
     "plan-subagent": {
       "description": "Advanced task planning and estimation subagent",
-      "model": "opencode/grok-code-fast-1",
       "temperature": 0.1,
       "top_p": 0.95,
       "mode": "subagent",
@@ -402,7 +382,7 @@
         "list": true
       },
       "permission": {
-        "edit": "deny",
+        "edit": "allow",
         "bash": "deny",
         "webfetch": "allow"
       },
@@ -411,7 +391,6 @@
     },
     "todo": {
       "description": "Advanced task management subagent",
-      "model": "opencode/code-supernova",
       "temperature": 0.1,
       "top_p": 0.95,
       "mode": "subagent",
@@ -423,7 +402,7 @@
       "permission": {
         "edit": "allow",
         "bash": "deny",
-        "webfetch": "deny"
+        "webfetch": "allow"
       },
 
       "disable": false
@@ -438,9 +417,9 @@
         "read": true
       },
       "permission": {
-        "edit": "deny",
-        "bash": "deny",
-        "webfetch": "deny"
+        "edit": "allow",
+        "bash": "allow",
+        "webfetch": "allow"
       },
 
       "disable": false
@@ -455,9 +434,9 @@
         "read": true
       },
       "permission": {
-        "edit": "deny",
-        "bash": "deny",
-        "webfetch": "deny"
+        "edit": "allow",
+        "bash": "allow",
+        "webfetch": "allow"
       },
 
       "disable": false
@@ -469,30 +448,30 @@
       "type": "local",
       "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "/Users/lorenzorasmussen"],
       "environment": {},
-      "enabled": true
+      "enabled": false
     },
     "memory": {
       "type": "local",
       "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
       "environment": {},
-      "enabled": true
+      "enabled": false
     },
     "github": {
       "type": "remote",
       "url": "https://mcp-github.vercel.app",
-      "enabled": true,
+      "enabled": false,
       "headers": {}
     },
     "git": {
       "type": "remote",
       "url": "https://mcp-git.vercel.app",
-      "enabled": true,
+      "enabled": false,
       "headers": {}
     },
     "sqlite": {
       "type": "remote",
       "url": "https://mcp-sqlite.vercel.app",
-      "enabled": true,
+      "enabled": false,
       "headers": {}
     },
     "notion": {
@@ -523,13 +502,13 @@
       "extensions": [".js", ".ts", ".jsx", ".tsx", ".json", ".md", ".css", ".html"]
     },
     "black": {
-      "disabled": false,
+      "disabled": true,
       "command": ["black"],
       "environment": {},
       "extensions": [".py"]
     },
     "rustfmt": {
-      "disabled": false,
+      "disabled": true,
       "command": ["rustfmt"],
       "environment": {},
       "extensions": [".rs"]
@@ -554,13 +533,11 @@
     "rust": {
       "command": ["rust-analyzer"],
       "extensions": [".rs"],
-      "disabled": false,
+      "disabled": true,
       "env": {},
       "initialization": {}
     }
   },
-
-
 
   "experimental": {
     "hook": {

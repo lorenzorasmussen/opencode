@@ -322,15 +322,19 @@ export namespace Provider {
       }
     }
 
-    for (const plugin of await Plugin.list()) {
-      if (!plugin.auth) continue
-      const providerID = plugin.auth.provider
-      if (disabled.has(providerID)) continue
-      const auth = await Auth.get(providerID)
-      if (!auth) continue
-      if (!plugin.auth.loader) continue
-      const options = await plugin.auth.loader(() => Auth.get(providerID) as any, database[plugin.auth.provider])
-      mergeProvider(plugin.auth.provider, options ?? {}, "custom")
+    try {
+      for (const plugin of await Plugin.list()) {
+        if (!plugin.auth) continue
+        const providerID = plugin.auth.provider
+        if (disabled.has(providerID)) continue
+        const auth = await Auth.get(providerID)
+        if (!auth) continue
+        if (!plugin.auth.loader) continue
+        const options = await plugin.auth.loader(() => Auth.get(providerID) as any, database[plugin.auth.provider])
+        mergeProvider(plugin.auth.provider, options ?? {}, "custom")
+      }
+    } catch (e) {
+      log.error("Failed to load plugins", { error: e })
     }
 
     // load config

@@ -3,12 +3,19 @@ import { Storage } from "../src/storage/sqlite"
 import { Database } from "bun:sqlite"
 import { Log } from "../src/util/log"
 import path from "path"
-import fs from "fs/promises"
+import fs from "fs/promises";
 
 // @ts-ignore
-Log.init = () => {}
+Log.init = () => {};
 
-let currentTmpDir: string
+let currentTmpDir: string;
+
+mock.module("fs/promises", () => ({
+  ...fs,
+  mkdtemp: (prefix: string) => {
+    return fs.mkdtemp(path.join(currentTmpDir, path.basename(prefix)));
+  },
+}));
 
 mock.module("bun", () => ({
   $: (strings: TemplateStringsArray, ...values: any[]) => {

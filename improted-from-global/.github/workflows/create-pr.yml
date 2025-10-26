@@ -1,0 +1,95 @@
+name: Create Pull Request
+
+on:
+  workflow_dispatch:
+    inputs:
+      head_branch:
+        description: 'Head branch for the PR'
+        required: true
+        type: string
+      base_branch:
+        description: 'Base branch for the PR'
+        required: false
+        default: 'main'
+        type: string
+      title:
+        description: 'PR title'
+        required: true
+        type: string
+      body:
+        description: 'PR description'
+        required: false
+        type: string
+      draft:
+        description: 'Create as draft PR'
+        required: false
+        default: false
+        type: boolean
+      labels:
+        description: 'Comma-separated labels (e.g., enhancement,bug)'
+        required: false
+        type: string
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify branches exist
+        run: |
+          if ! git show-ref --verify --quiet "refs/remotes/origin/${{ inputs.head_branch }}"; then
+            echo "❌ Head branch '${{ inputs.head_branch }}' does not exist"
+            exit 1
+          fi
+          if ! git show-ref --verify --quiet "refs/remotes/origin/${{ inputs.base_branch }}"; then
+            echo "❌ Base branch '${{ inputs.base_branch }}' does not exist"
+            exit 1
+          fi
+
+      - name: Create Pull Request
+        run: |
+          # Build PR body
+          PR_BODY="${{ inputs.body }}"
+
+          # Add default body if none provided
+          if [ -z "$PR_BODY" ]; then
+            PR_BODY="## Description
+This PR ${{ inputs.title | lower }}
+
+## Changes
+$(git log --oneline origin/${{ inputs.base_branch }}..origin/${{ inputs.head_branch }} | sed 's/^/- /')
+
+## Checklist
+- [ ] Tests pass
+- [ ] Documentation updated
+- [ ] Ready for review"
+          fi
+
+          # Create PR command
+          CMD="gh pr create --title \"${{ inputs.title }}\" --body \"$PR_BODY\" --base ${{ inputs.base_branch }} --head ${{ inputs.head_branch }}"
+
+          # Add draft flag if requested
+          if [ "${{ inputs.draft }}" = "true" ]; then
+            CMD="$CMD --draft"
+          fi
+
+          # Add labels if provided
+          if [ -n "${{ inputs.labels }}" ]; then
+            CMD="$CMD --label ${{ inputs.labels }}"
+          fi
+
+          echo "Creating PR with command: $CMD"
+          PR_URL=$(eval $CMD)
+
+          echo "✅ PR created: $PR_URL"
+          echo "PR_URL=$PR_URL" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Output PR URL
+        run: |
+          echo "Pull Request: ${{ env.PR_URL }}"

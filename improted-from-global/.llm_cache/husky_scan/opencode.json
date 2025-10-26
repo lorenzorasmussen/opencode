@@ -1,0 +1,72 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "opencode/big-pickle",
+  "small_model": "opencode/big-pickle",
+  "username": "Lorenzo",
+  "share": "manual",
+  "snapshot": false,
+  "autoupdate": false,
+  "permission": {
+    "edit": "allow",
+    "bash": "ask",
+    "webfetch": "allow"
+  },
+  "tools": {
+    "bash": true,
+    "webfetch": true,
+    "mcp": true
+  },
+  "provider": {
+    "opencode": {
+      "models": {
+        "code-supernova": {
+          "id": "opencode/code-supernova",
+          "name": "Code Supernova"
+        },
+        "grok-code-fast-1": {
+          "id": "opencode/grok-code-fast-1",
+          "name": "Grok Code Fast"
+        },
+        "big-pickle": {
+          "id": "opencode/big-pickle",
+          "name": "Big Pickle"
+        }
+      }
+    },
+    "perplexity": {
+      "options": {
+        "apiKey": "${PERPLEXITY_API_KEY}"
+      },
+      "models": {
+        "sonar-pro": {
+          "id": "perplexity/sonar-pro",
+          "name": "Sonar Pro"
+        }
+      }
+    },
+    "openrouter": {
+      "options": {
+        "apiKey": "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",
+        "baseURL": "https://openrouter.ai/api/v1"
+      },
+      "models": {
+        "qwen3-coder": {
+          "id": "qwen/qwen3-coder:free",
+          "name": "Qwen3 Coder (Free)"
+        },
+        "mistral-small": {
+          "id": "mistralai/mistral-small-3.2-24b-instruct:free",
+          "name": "Mistral Small 3.2 (Free)"
+        },
+        "bge-reranker-base": {
+          "id": "baai/bge-reranker-base",
+          "name": "BGE Reranker Base"
+        },
+        "bge-reranker-large": {
+          "id": "baai/bge-reranker-large",
+          "name": "BGE Reranker Large"
+        }
+      }
+    }
+  }
+}

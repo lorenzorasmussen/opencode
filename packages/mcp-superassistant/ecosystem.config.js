@@ -10,8 +10,8 @@ module.exports = {
   apps: [
     {
       name: 'mcp-mem0-server',
-      script: 'src/servers/mem0_server.js',
-      cwd: path.join(os.homedir(), '.config', 'opencode', 'mcp-superassistant'),
+      script: './src/servers/mem0_server.js',
+      cwd: __dirname,
       instances: 1,
       autorestart: true,
       watch: false,
@@ -28,7 +28,8 @@ module.exports = {
     },
     {
       name: 'mcp-gemini-bridge',
-      script: 'src/bridges/gemini_bridge.js',
+      script: './src/bridges/gemini_bridge.js',
+      cwd: __dirname,
       instances: 1,
       autorestart: true,
       watch: false,
@@ -45,7 +46,8 @@ module.exports = {
     },
     {
       name: 'mcp-qwen-bridge',
-      script: 'src/bridges/qwen_bridge.js',
+      script: './src/bridges/qwen_bridge.js',
+      cwd: __dirname,
       instances: 1,
       autorestart: true,
       watch: false,
@@ -62,7 +64,8 @@ module.exports = {
     },
     {
       name: 'mcp-health-monitor',
-      script: 'src/utils/health_check.js',
+      script: './src/utils/health_check.js',
+      cwd: __dirname,
       instances: 1,
       autorestart: true,
       cron_restart: '*/5 * * * *',
