@@ -1,0 +1,2 @@
+# Agent meta/log file; used by monitor agent for performance/error/event tracking.
+# Example entry: [2025-10-18T21:15:37] build agent - OK
