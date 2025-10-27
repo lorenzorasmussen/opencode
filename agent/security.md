@@ -1,7 +1,6 @@
 ---
 description: "Comprehensive security analysis and spec-driven documentation"
 agent: project-maintainer
-model: opencode/code-supernova
 ---
 
 ```
