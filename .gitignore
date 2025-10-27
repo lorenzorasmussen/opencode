@@ -1,5 +1,5 @@
  .DS_Store
- node_modules
+node_modules/
  .worktrees
  .sst
  .env
@@ -9,8 +9,8 @@
  playground
  tmp
  dist
- .turbo
-  .opencode/
+.turbo/
+ .opencode/
   .gemini/
 
 # Logs
@@ -109,3 +109,5 @@ Thumbs.db
 
 .gemini/
 gha-creds-*.json
+
+.opencode/
