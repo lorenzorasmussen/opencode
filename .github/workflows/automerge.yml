@@ -1,0 +1,15 @@
+name: Enable Automerge
+
+on:
+  pull_request_target:
+
+jobs:
+  automerge:
+    name: Enable Automerge
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable Automerge
+        uses: daneden/enable-automerge-action@v1.0.2
+        with:
+          github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          merge-method: MERGE
