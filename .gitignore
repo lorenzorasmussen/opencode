@@ -111,3 +111,4 @@ Thumbs.db
 .gemini/
 gha-creds-*.json
 improted-from-global/bin/trufflehog
+.turbo/
