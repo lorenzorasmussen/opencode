@@ -52,6 +52,7 @@ export namespace Log {
   }
 
   export async function init(options: Options) {
+    if (process.env.BUN_TEST) options.print = true
     if (options.level) level = options.level
     cleanup(Global.Path.log)
     if (options.print) return

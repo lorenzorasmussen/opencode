@@ -1,0 +1,4 @@
+bun test
+
+# Check documentation sync
+.husky/scripts/check-docs-sync.sh

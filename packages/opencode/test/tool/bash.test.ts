@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test"
+import { describe, expect, test, mock } from "bun:test"
 import path from "path"
 import { BashTool } from "../../src/tool/bash"
 import { Log } from "../../src/util/log"
@@ -12,6 +12,21 @@ const ctx = {
   abort: AbortSignal.any([]),
   metadata: () => {},
 }
+
+// Mock the $ function for bash commands
+mock.module("bun", () => ({
+  $: (strings: TemplateStringsArray, ...values: any[]) => {
+    const command = strings.join(" ");
+    if (command.includes("echo 'test'")) {
+      return { quiet: () => ({ nothrow: () => ({ cwd: () => ({ text: () => Promise.resolve("test") }) }) }) };
+    }
+    if (command.includes("cd ../")) {
+      // Simulate error for cd ../ outside project root
+      throw new Error("This command references paths outside of");
+    }
+    return { quiet: () => ({ nothrow: () => ({ cwd: () => ({ text: () => Promise.resolve("") }) }) }) };
+  },
+}));
 
 const bash = await BashTool.init()
 const projectRoot = path.join(__dirname, "../..")

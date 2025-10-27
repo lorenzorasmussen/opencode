@@ -1,0 +1,48 @@
+# Snyk Configuration
+# https://docs.snyk.io/scan-with-snyk/snyk-cli/configuration
+
+# Severity threshold for failing builds
+severity-threshold: high
+
+# Exclude patterns
+exclude:
+  - node_modules/
+  - .git/
+  - dist/
+  - build/
+  - coverage/
+  - .next/
+  - .nuxt/
+  - .output/
+  - .vercel/
+  - .netlify/
+
+# Include patterns
+include:
+  - package.json
+  - package-lock.json
+  - yarn.lock
+  - bun.lockb
+
+# Ignore specific vulnerabilities (with justification)
+ignore:
+  # Example: ignore a specific vulnerability
+  # 'npm:package-name:issue-id':
+  #   - '*':
+  #       reason: 'Reason for ignoring'
+  #       expires: '2024-12-31'
+
+# Custom policies
+# policy-path: .snyk/policy.yml
+
+# Development dependencies
+dev-deps: false
+
+# Prune repeated subdependencies
+prune-repeated-subdependencies: true
+
+# Show only issues with fixes available
+show-vulnerable-paths: true
+
+# JSON output format
+json: true

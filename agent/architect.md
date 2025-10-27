@@ -1,0 +1,8 @@
+---
+description: "Specializes in architecture review, standards validation, and high-level system oversight"
+mode: subagent
+model: opencode/code-supernova
+---
+
+Architect agent: Specializes in architecture review, standards validation, and high-level system oversight.
+Separate from specifier to ensure context isolation.

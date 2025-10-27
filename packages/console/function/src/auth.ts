@@ -15,6 +15,19 @@ import { and, Database, eq, isNull } from "@opencode-ai/console-core/drizzle/ind
 import { WorkspaceTable } from "@opencode-ai/console-core/schema/workspace.sql.js"
 import { UserTable } from "@opencode-ai/console-core/schema/user.sql.js"
 
+// Password hashing utilities
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(password + "opencode-salt") // simple salt
+  const hash = await crypto.subtle.digest("SHA-256", data)
+  return btoa(String.fromCharCode(...new Uint8Array(hash)))
+}
+
+async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  const computedHash = await hashPassword(password)
+  return computedHash === hash
+}
+
 type Env = {
   AuthStorage: KVNamespace
 }
@@ -37,6 +50,92 @@ const MY_THEME: Theme = {
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
+    const url = new URL(request.url)
+
+    // Handle password-based registration
+    if (url.pathname === "/register" && request.method === "POST") {
+      const body = (await request.json()) as { email: string; password: string; name: string }
+      const { email, password, name } = body
+      if (!email || !password || !name) {
+        return new Response(JSON.stringify({ error: "Email, password, and name required" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        })
+      }
+
+      const existingAccount = await Account.fromEmail(email)
+      if (existingAccount) {
+        return new Response(JSON.stringify({ error: "Account already exists" }), {
+          status: 409,
+          headers: { "Content-Type": "application/json" },
+        })
+      }
+
+      const passwordHash = await hashPassword(password)
+      const accountID = await Account.create({
+        email,
+        passwordHash,
+      })
+
+      await Actor.provide("account", { accountID, email }, async () => {
+        await User.joinInvitedWorkspaces()
+        const workspaces = await Database.transaction(async (tx) =>
+          tx
+            .select({ id: WorkspaceTable.id })
+            .from(WorkspaceTable)
+            .innerJoin(UserTable, eq(UserTable.workspaceID, WorkspaceTable.id))
+            .where(
+              and(
+                eq(UserTable.accountID, accountID),
+                isNull(UserTable.timeDeleted),
+                isNull(WorkspaceTable.timeDeleted),
+              ),
+            ),
+        )
+        if (workspaces.length === 0) {
+          await Workspace.create({ name: "Default" })
+        }
+      })
+
+      return new Response(JSON.stringify({ accountID }), {
+        status: 201,
+        headers: { "Content-Type": "application/json" },
+      })
+    }
+
+    // Handle password-based login
+    if (url.pathname === "/login" && request.method === "POST") {
+      const body = (await request.json()) as { email: string; password: string }
+      const { email, password } = body
+      if (!email || !password) {
+        return new Response(JSON.stringify({ error: "Email and password required" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        })
+      }
+
+      const account = await Account.fromEmail(email)
+      if (!account || !account.passwordHash) {
+        return new Response(JSON.stringify({ error: "Invalid credentials" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        })
+      }
+
+      const valid = await verifyPassword(password, account.passwordHash)
+      if (!valid) {
+        return new Response(JSON.stringify({ error: "Invalid credentials" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        })
+      }
+
+      return new Response(JSON.stringify({ accountID: account.id, email: account.email }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    }
+
     const result = await issuer({
       theme: MY_THEME,
       providers: {

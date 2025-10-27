@@ -1,111 +1,314 @@
-<p align="center">
-  <a href="https://opencode.ai">
-    <picture>
-      <source srcset="packages/console/app/src/asset/logo-ornate-dark.svg" media="(prefers-color-scheme: dark)">
-      <source srcset="packages/console/app/src/asset/logo-ornate-light.svg" media="(prefers-color-scheme: light)">
-      <img src="packages/console/app/src/asset/logo-ornate-light.svg" alt="OpenCode logo">
-    </picture>
-  </a>
-</p>
-<p align="center">The AI coding agent built for the terminal.</p>
-<p align="center">
-  <a href="https://opencode.ai/discord"><img alt="Discord" src="https://img.shields.io/discord/1391832426048651334?style=flat-square&label=discord" /></a>
-  <a href="https://www.npmjs.com/package/opencode-ai"><img alt="npm" src="https://img.shields.io/npm/v/opencode-ai?style=flat-square" /></a>
-  <a href="https://github.com/sst/opencode/actions/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/sst/opencode/publish.yml?style=flat-square&branch=dev" /></a>
-</p>
+# OpenCode
 
-[![OpenCode Terminal UI](packages/web/src/assets/lander/screenshot.png)](https://opencode.ai)
+The AI coding agent built for the terminal.
 
----
+## Overview
+
+OpenCode is a fully open source AI coding agent that helps you write and run code directly from the terminal. With over 26,000 GitHub stars and 200,000+ monthly developers, OpenCode provides:
+
+- **Native TUI** - Responsive, themeable terminal interface
+- **LSP enabled** - Automatic language server protocol support
+- **Multi-session** - Run multiple agents in parallel
+- **Share links** - Share sessions for reference and debugging
+- **Any model** - 75+ LLM providers through Models.dev
+- **Any editor** - Works with any IDE
+- **Privacy first** - Zero code storage for sensitive environments
+- **Comprehensive Testing** - 166+ tests with 100% pass rate
+- **CI/CD Pipeline** - Automated testing, quality checks, and deployment
+
+## Quick Start
 
 ### Installation
 
 ```bash
-# YOLO
 curl -fsSL https://opencode.ai/install | bash
-
-# Package managers
-npm i -g opencode-ai@latest        # or bun/pnpm/yarn
-brew install sst/tap/opencode      # macOS and Linux
-paru -S opencode-bin               # Arch Linux
 ```
 
-> [!TIP]
-> Remove versions older than 0.1.x before installing.
+Or use your preferred package manager:
 
-#### Installation Directory
+- `npm install -g @opencode-ai/opencode`
+- `bun install -g @opencode-ai/opencode`
+- `brew install opencode`
 
-The install script respects the following priority order for the installation path:
-
-1. `$OPENCODE_INSTALL_DIR` - Custom installation directory
-2. `$XDG_BIN_DIR` - XDG Base Directory Specification compliant path
-3. `$HOME/bin` - Standard user binary directory (if exists or can be created)
-4. `$HOME/.opencode/bin` - Default fallback
+### Basic Usage
 
 ```bash
-# Examples
-OPENCODE_INSTALL_DIR=/usr/local/bin curl -fsSL https://opencode.ai/install | bash
-XDG_BIN_DIR=$HOME/.local/bin curl -fsSL https://opencode.ai/install | bash
+# Start OpenCode
+opencode
+
+# Show available models
+opencode models
+
+# Show help
+opencode --help
 ```
 
-### Documentation
+## Documentation
 
-For more info on how to configure OpenCode [**head over to our docs**](https://opencode.ai/docs).
+### Core Documentation
 
-### Contributing
+- **[Agent Guidelines](./AGENTS.md)** - Agent configuration and development
+- **[Model Guide](./MODELS.md)** - Available models and pricing
+- **[Configuration](./opencode.json)** - Project configuration
 
-OpenCode is an opinionated tool so any fundamental feature needs to go through a
-design process with the core team.
+### Consolidated Agent and Command System
 
-> [!IMPORTANT]
-> We do not accept PRs for core features.
+OpenCode uses a streamlined agent and command system optimized for efficiency:
 
-However we still merge a ton of PRs - you can contribute:
+#### Primary Agents (4)
 
-- Bug fixes
-- Improvements to LLM performance
-- Support for new providers
-- Fixes for env specific quirks
-- Missing standard behavior
-- Documentation
+- **build** - Full development workflow (implementation, testing, version control)
+- **plan** - Strategic planning and analysis (read-only)
+- **orchestrator** - Task coordination and system architecture design
+- **researcher** - Deep investigation and research
 
-Take a look at the git history to see what kind of PRs we end up merging.
+#### Subagents (6)
 
-> [!NOTE]
-> If you do not follow the above guidelines we might close your PR.
+- **code-modifier** - File editing, formatting, and cleanup
+- **code-searcher** - Advanced code and semantic search
+- **dev-assistant** - Testing, debugging, and shell operations
+- **project-maintainer** - Documentation, task management, and git operations
+- **idea-helper** - Ideation, specification, and general assistance
+- **code-reviewer** - Code quality review
 
-To run OpenCode locally you need.
+#### Commands (11)
 
-- Bun
-- Golang 1.24.x
+- **code-review** - Comprehensive code review utility
+- **test** - Comprehensive testing and coverage analysis
+- **debug** - Comprehensive debugging and defect resolution
+- **build** - Comprehensive building and code implementation
+- **plan** - Comprehensive project planning and estimation
+- **search** - Comprehensive code and semantic search with reranking
+- **edit** - Comprehensive file editing, formatting, and cleanup
+- **git** - Comprehensive Git workflow automation and commit management
+- **docs** - Comprehensive documentation and task management
+- **shell** - Comprehensive shell configuration, zsh setup, and Git hooks management
+- **security** - Comprehensive security analysis and spec-driven documentation
 
-And run.
+All commands spawn child sessions with appropriate agents and reference only the consolidated agent names.
+
+### Key Topics
+
+#### Agent Configuration
+
+OpenCode supports multiple agent configuration formats:
+
+- **Markdown files** with YAML frontmatter (recommended)
+- **JSON configuration** in `opencode.json`
+- **YAML commands** for slash commands
+
+See [AGENTS.md](./AGENTS.md) for complete documentation.
+
+#### Models
+
+OpenCode Zen provides curated, tested models optimized for coding:
+
+- **Free models**: Grok Code Fast 1, Code Supernova (beta)
+- **Premium models**: Claude Sonnet 4.5, GPT 5 Codex, and more
+- **Pay-as-you-go**: Transparent pricing with no markup
+
+See [MODELS.md](./MODELS.md) for detailed comparison.
+
+## Development
+
+### Prerequisites
+
+- Node.js 18+ or Bun
+- TypeScript
+
+### Setup
 
 ```bash
-$ bun install
-$ bun dev
+# Clone repository
+git clone https://github.com/sst/opencode.git
+cd opencode
+
+# Install dependencies (including dev dependencies)
+bun install
+
+# Build project
+bun run build
+
+# Run tests (166+ tests)
+bun test
+
+# Run specific test suites
+bun run test:unit
+bun run test:integration
+bun run test:e2e
+
+# Type checking
+bun run typecheck
+
+# Lint and format
+bun run lint
+bun run format
 ```
 
-#### Development Notes
+### Project Structure
 
-**API Client**: After making changes to the TypeScript API endpoints in `packages/opencode/src/server/server.ts`, you will need the OpenCode team to generate a new stainless sdk for the clients.
+```
+opencode/
+├── .github/           # CI/CD workflows and actions
+│   ├── workflows/     # GitHub Actions pipelines
+│   └── actions/       # Reusable actions
+├── agent/             # Agent definitions (.md files)
+├── command/           # Command definitions (.md files)
+├── packages/          # Core packages
+│   ├── opencode/      # Main application
+│   │   ├── src/       # Source code
+│   │   ├── test/      # Comprehensive test suite
+│   │   └── ...
+│   ├── console/       # Console interface
+│   ├── desktop/       # Desktop app
+│   └── ...
+├── script/            # Build and utility scripts
+├── docs/              # Documentation
+├── AGENTS.md          # Agent configuration guide
+├── MODELS.md          # Model comparison guide
+├── PROJECT_SUMMARY.md # Comprehensive overview
+└── opencode.json      # Project configuration
+```
 
-### FAQ
+### Code Style
 
-#### How is this different than Claude Code?
+- **Runtime**: Bun with TypeScript ESM modules
+- **Formatting**: Prettier (no semicolons, 120 char width)
+- **Imports**: Relative imports, named imports preferred
+- **Types**: Zod schemas for validation, TypeScript interfaces
+- **Naming**: camelCase variables, PascalCase classes
 
-It's very similar to Claude Code in terms of capability. Here are the key differences:
+## Testing
 
-- 100% open source
-- Not coupled to any provider. Although Anthropic is recommended, OpenCode can be used with OpenAI, Google or even local models. As models evolve the gaps between them will close and pricing will drop so being provider-agnostic is important.
-- Out of the box LSP support
-- A focus on TUI. OpenCode is built by neovim users and the creators of [terminal.shop](https://terminal.shop); we are going to push the limits of what's possible in the terminal.
-- A client/server architecture. This for example can allow OpenCode to run on your computer, while you can drive it remotely from a mobile app. Meaning that the TUI frontend is just one of the possible clients.
+OpenCode includes a comprehensive test suite with 166+ tests covering:
 
-#### What's the other repo?
+- **Unit Tests** - Core functionality and utilities
+- **Integration Tests** - Module interactions and workflows
+- **E2E Tests** - Complete user workflows
+- **Configuration Validation** - Standards compliance checks
 
-The other confusingly named repo has no relation to this one. You can [read the story behind it here](https://x.com/thdxr/status/1933561254481666466).
+### Running Tests
+
+```bash
+# Run all tests
+bun test
+
+# Run specific test suites
+bun run test:unit
+bun run test:integration
+bun run test:e2e
+
+# Run with coverage (experimental)
+bun run test:coverage
+```
+
+### CI/CD Pipeline
+
+Automated testing and quality checks run on every push/PR via GitHub Actions:
+
+- **Test Execution** - All test suites with caching
+- **Code Quality** - ESLint, Prettier, CSpell, documentation sync
+- **Coverage Tracking** - Experimental coverage reporting
+- **Quality Reports** - Automated PR comments and artifact uploads
+
+## Configuration
+
+### Basic Configuration
+
+Create `opencode.json` in your project root:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "edit": "allow"
+  },
+  "disabled_providers": ["anthropic", "openai"],
+  "agent": {
+    "build": {
+      "description": "Implements features and runs tests",
+      "mode": "primary",
+      "model": "opencode/code-supernova",
+      "tools": {
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    }
+  }
+}
+```
+
+### Agent Definition (Markdown)
+
+Create `agent/my-agent.md`:
+
+```markdown
+---
+description: "Custom agent for specific tasks"
+mode: subagent
+model: "opencode/code-supernova"
+temperature: 0.1
+permission:
+  edit: allow
+  bash: ask
+---
+
+Your agent instructions go here...
+```
+
+### Command Definition (Markdown)
+
+Create `command/my-command.md`:
+
+```markdown
+---
+description: "Custom command for specific tasks"
+agent: build
+template: "Execute $ARGUMENTS"
+---
+
+Command instructions go here...
+```
+
+## OpenCode Zen
+
+OpenCode Zen provides curated models optimized for coding agents:
+
+### Getting Started
+
+1. Sign up at [opencode.ai/auth](https://opencode.ai/auth)
+2. Add $20 balance (+$1.23 processing fee)
+3. Copy your API key
+4. Run `opencode auth login` and select opencode provider
+
+### Model Recommendations
+
+- **Code Implementation**: Claude Sonnet 4.5, GPT 5 Codex
+- **Code Review**: Claude Sonnet 4, Claude Haiku 4.5
+- **Budget Options**: Claude Haiku 3.5, Qwen3 Coder 480B
+- **Free Options**: Grok Code Fast 1, Code Supernova
+
+See [MODELS.md](./MODELS.md) for complete pricing and capabilities.
+
+## Community
+
+- **GitHub**: [github.com/sst/opencode](https://github.com/sst/opencode)
+- **Discord**: [opencode.ai/discord](https://opencode.ai/discord)
+- **Documentation**: [opencode.ai/docs](https://opencode.ai/docs)
+
+## License
+
+OpenCode is open source. See [LICENSE](./LICENSE) for details.
 
 ---
 
-**Join our community** [Discord](https://discord.gg/opencode) | [X.com](https://x.com/opencode)
+## Documentation Suite
+
+- **[AGENTS.md](./AGENTS.md)** - Agent configuration and development guide
+- **[MODELS.md](./MODELS.md)** - Model comparison and selection guide
+- **[PROJECT_SUMMARY.md](./PROJECT_SUMMARY.md)** - Comprehensive project overview
+- **[Testing Guide](./packages/opencode/test/)** - Test suite documentation
+- **[CI/CD Guide](./.github/workflows/)** - Pipeline and automation documentation
+
+_For detailed documentation, see the complete documentation suite above._

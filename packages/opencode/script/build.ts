@@ -30,9 +30,9 @@ for (const [os, arch] of targets) {
   console.log(`building ${os}-${arch}`)
   const name = `${pkg.name}-${os}-${arch}`
   await $`mkdir -p dist/${name}/bin`
-  await $`CGO_ENABLED=0 GOOS=${os} GOARCH=${GOARCH[arch]} go build -ldflags="-s -w -X main.Version=${version}" -o ../opencode/dist/${name}/bin/tui ../tui/cmd/opencode/main.go`
-    .cwd("../tui")
-    .quiet()
+  await $`CGO_ENABLED=0 GOOS=${os} GOARCH=${GOARCH[arch]} go build -ldflags='-s' -o ../opencode/dist/${name}/bin/tui ../tui/cmd/opencode/main.go`.cwd(
+    "../tui",
+  )
 
   const watcher = `@parcel/watcher-${os === "windows" ? "win32" : os}-${arch.replace("-baseline", "")}${os === "linux" ? "-glibc" : ""}`
   await $`mkdir -p ../../node_modules/${watcher}`
@@ -49,7 +49,7 @@ for (const [os, arch] of targets) {
     entrypoints: ["./src/index.ts"],
     define: {
       OPENCODE_VERSION: `'${version}'`,
-      OPENCODE_TUI_PATH: `'../../../dist/${name}/bin/tui'`,
+      OPENCODE_TUI_PATH: `'${path.resolve(dir, `dist/${name}/bin/tui`)}'`,
     },
   })
   await $`rm -rf ./dist/${name}/bin/tui`

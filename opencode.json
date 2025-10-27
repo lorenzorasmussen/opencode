@@ -1,3 +1,17 @@
 {
-  "$schema": "https://opencode.ai/config.json"
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "edit": "allow"
+  },
+  "disabled_providers": ["anthropic", "openai"],
+  "mcp": {
+    "rube": {
+      "type": "remote",
+      "url": "https://backend.composio.dev/v3/mcp/24168591-405a-47f1-8122-07437cafcb2b/mcp?user_id=pg-test-aeec135f-d18b-4714-957b-cbeeccabe472",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZ2VudElkIjoib3BlbmNvZGUtYWdlbnQiLCJ1c2VySWQiOiJ1c2VyLTEyMyIsInBlcm1pc3Npb25zIjp7InRvb2xzIjp0cnVlLCJyZXNvdXJjZXMiOnRydWUsInByb21wdHMiOnRydWV9LCJ0eXBlIjoiYWdlbnQiLCJpYXQiOjE3NjE1NDgzNzYsImV4cCI6MTc2MTYzNDc3Nn0.4KyCE2m2szISbmm3C_H3HqQyOy8FH722X1Wxixfp_-"
+      },
+      "enabled": true
+    }
+  }
 }
