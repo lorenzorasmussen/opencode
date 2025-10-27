@@ -112,3 +112,4 @@ Thumbs.db
 gha-creds-*.json
 improted-from-global/bin/trufflehog
 .turbo/
+.env
