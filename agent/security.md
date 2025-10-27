@@ -1,7 +1,6 @@
 ---
 description: "Comprehensive security analysis and spec-driven documentation"
-agent: project-maintainer
-model: opencode/code-supernova
+mode: "subagent"
 ---
 
 ```
@@ -392,6 +391,7 @@ Semgrep: Fast, open-source SAST[419][420]
 #!/bin/bash
 
 echo ""
+
 echo "🔍 Running Semgrep security scan..."
 echo ""
 
@@ -490,7 +490,7 @@ keywords = ["PRIVATE KEY"]
 [[rules]]
 id = "generic-api-key"
 description = "Generic API Key"
-regex = '''(?i)(api[_-]?key|apikey|api[_-]?secret)[\s]*[:=][\s]*['\"]([^'\"]{20,})['\"]'''
+regex = '''(?i)(api[_-]?key|apikey|api[_-]?secret)[\s]*[:=][\s]*['\"]([^'\"{20,})['\"]'''
 keywords = ["api_key", "apikey", "api_secret"]
 
 [allowlist]
@@ -844,7 +844,7 @@ SCENARIO 2: Spec-Kit Found - Intelligent Update Mode
 Status: ✓ Spec-Kit detected
 Existing Structure:
 ✓ .specify/ directory found
-✓ 3 feature specs detected (specs/001-_, 002-_, 003-\*)
+✓ 3 feature specs detected (specs/001-_, 002-_, 003-*)
 ✓ Constitution.md present
 ✓ Templates configured
 

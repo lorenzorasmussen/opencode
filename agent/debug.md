@@ -1,7 +1,6 @@
 ---
 description: "Comprehensive debugging and defect resolution"
-mode: subagent
-model: opencode/code-supernova
+mode: "subagent"
 ---
 
 ```
@@ -891,6 +890,7 @@ echo "  diff $DEBUG_DIR/reproduction_test{,_fixed}.js"
 ════════════════════════════════════════════════════════════════
 
 ````
+```
 
 ***
 

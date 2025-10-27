@@ -1,7 +1,6 @@
 ---
 description: "Constitution and specification authoring specialist"
-mode: subagent
-model: opencode/code-supernova
+mode: "subagent"
 ---
 
 Specifier agent: Constitution/specs authoring

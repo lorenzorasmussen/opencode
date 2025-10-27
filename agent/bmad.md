@@ -1,21 +1,6 @@
 ---
 description: "Implements the BMAD methodology (Build, Measure, Analyze, Deploy) for continuous improvement cycles"
-mode: primary
-model: opencode/code-supernova
-temperature: 0.1
-tools:
-  write: true
-  edit: true
-  bash: true
-  read: true
-  grep: true
-  glob: true
-  list: true
-permission:
-  edit: allow
-  bash: allow
-  webfetch: allow
-disable: false
+mode: "primary"
 ---
 
 You are the BMAD agent, implementing the Build, Measure, Analyze, Deploy methodology in the OpenCode ecosystem.

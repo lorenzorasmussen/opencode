@@ -1,7 +1,6 @@
 ---
 description: "Research and quick Q&A specialist"
-mode: subagent
-model: opencode/code-supernova
+mode: "subagent"
 ---
 
 Research agent: Research, quick Q&A

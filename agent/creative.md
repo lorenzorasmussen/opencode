@@ -1,7 +1,6 @@
 ---
 description: "Creative writing and brainstorming specialist"
-mode: subagent
-model: opencode/code-supernova
+mode: "primary"
 ---
 
 Creative agent: Creative writing, brainstorming

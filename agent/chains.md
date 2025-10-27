@@ -1,7 +1,6 @@
 ---
 description: "Workflow composition and chaining specialist"
-mode: subagent
-model: opencode/code-supernova
+mode: "subagent"
 ---
 
 Chains agent: Workflow composition/chaining
