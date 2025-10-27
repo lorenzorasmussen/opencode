@@ -1372,209 +1372,251 @@ export namespace SessionPrompt {
    * Does not match when preceded by word characters or backticks (to avoid email addresses and quoted references)
    */
 
-  export async function command(input: CommandInput) {
-    log.info("command", input)
-    const command = await Command.get(input.command)
-    const agentName = command.agent ?? input.agent ?? "build"
+  export async function command(input: CommandInput): Promise<MessageV2.WithParts> {
+    try {
+      log.info("command", input)
+      const command = await Command.get(input.command)
+      if (!command) {
+        throw new NamedError.Unknown({ message: `Command not found: /${input.command}` })
+      }
+      const agentName = command.agent ?? input.agent ?? "build"
 
-    let template = command.template.replace("$ARGUMENTS", input.arguments)
+      let template = command.template.replace("$ARGUMENTS", input.arguments)
 
-    const shell = ConfigMarkdown.shell(template)
-    if (shell.length > 0) {
-      const results = await Promise.all(
-        shell.map(async ([, cmd]) => {
-          try {
-            return await $`${{ raw: cmd }}`.nothrow().text()
-          } catch (error) {
-            return `Error executing command: ${error instanceof Error ? error.message : String(error)}`
+      const shell = ConfigMarkdown.shell(template)
+      if (shell.length > 0) {
+        const results = await Promise.all(
+          shell.map(async ([, cmd]) => {
+            const result = await $`${{ raw: cmd }}`.nothrow()
+            if (result.exitCode !== 0) {
+              const stderr = result.stderr.toString().trim()
+              const stdout = result.stdout.toString().trim()
+              const message = stderr || stdout || `Command failed with exit code ${result.exitCode}`
+              throw new Error(message) // will be caught by outer try-catch
+            }
+            return result.text()
+          }),
+        )
+        let index = 0
+        template = template.replace(bashRegex, () => results[index++])
+      }
+
+      const parts = [
+        {
+          type: "text",
+          text: template,
+        },
+      ] as PromptInput["parts"]
+
+      const files = ConfigMarkdown.files(template)
+      await Promise.all(
+        files.map(async (match) => {
+          const name = match[1]
+          const filepath = name.startsWith("~/")
+            ? path.join(os.homedir(), name.slice(2))
+            : path.resolve(Instance.worktree, name)
+
+          const stats = await fs.stat(filepath).catch(() => undefined)
+          if (!stats) {
+            const agent = await Agent.get(name)
+            if (agent) {
+              parts.push({
+                type: "agent",
+                name: agent.name,
+              })
+            }
+            return
           }
-        }),
-      )
-      let index = 0
-      template = template.replace(bashRegex, () => results[index++])
-    }
 
-    const parts = [
-      {
-        type: "text",
-        text: template,
-      },
-    ] as PromptInput["parts"]
-
-    const files = ConfigMarkdown.files(template)
-    await Promise.all(
-      files.map(async (match) => {
-        const name = match[1]
-        const filepath = name.startsWith("~/")
-          ? path.join(os.homedir(), name.slice(2))
-          : path.resolve(Instance.worktree, name)
-
-        const stats = await fs.stat(filepath).catch(() => undefined)
-        if (!stats) {
-          const agent = await Agent.get(name)
-          if (agent) {
+          if (stats.isDirectory()) {
             parts.push({
-              type: "agent",
-              name: agent.name,
+              type: "file",
+              url: `file://${filepath}`,
+              filename: name,
+              mime: "application/x-directory",
             })
+            return
           }
-          return
-        }
 
-        if (stats.isDirectory()) {
           parts.push({
             type: "file",
             url: `file://${filepath}`,
             filename: name,
-            mime: "application/x-directory",
+            mime: "text/plain",
           })
-          return
-        }
-
-        parts.push({
-          type: "file",
-          url: `file://${filepath}`,
-          filename: name,
-          mime: "text/plain",
-        })
-      }),
-    )
-
-    const model = await (async () => {
-      if (command.model) {
-        return Provider.parseModel(command.model)
-      }
-      if (command.agent) {
-        const cmdAgent = await Agent.get(command.agent)
-        if (cmdAgent.model) {
-          return cmdAgent.model
-        }
-      }
-      if (input.model) {
-        return Provider.parseModel(input.model)
-      }
-      return await Provider.defaultModel()
-    })()
-
-    const agent = await Agent.get(agentName)
-    if ((agent.mode === "subagent" && command.subtask !== false) || command.subtask === true) {
-      using abort = lock(input.sessionID)
-
-      const userMsg: MessageV2.User = {
-        id: Identifier.ascending("message"),
-        sessionID: input.sessionID,
-        time: {
-          created: Date.now(),
-        },
-        role: "user",
-      }
-      await Session.updateMessage(userMsg)
-      const userPart: MessageV2.Part = {
-        type: "text",
-        id: Identifier.ascending("part"),
-        messageID: userMsg.id,
-        sessionID: input.sessionID,
-        text: "The following tool was executed by the user",
-        synthetic: true,
-      }
-      await Session.updatePart(userPart)
-
-      const assistantMsg: MessageV2.Assistant = {
-        id: Identifier.ascending("message"),
-        sessionID: input.sessionID,
-        system: [],
-        mode: agentName,
-        cost: 0,
-        path: {
-          cwd: Instance.directory,
-          root: Instance.worktree,
-        },
-        time: {
-          created: Date.now(),
-        },
-        role: "assistant",
-        tokens: {
-          input: 0,
-          output: 0,
-          reasoning: 0,
-          cache: { read: 0, write: 0 },
-        },
-        modelID: model.modelID,
-        providerID: model.providerID,
-      }
-      await Session.updateMessage(assistantMsg)
-
-      const args = {
-        description: "Consulting " + agent.name,
-        subagent_type: agent.name,
-        prompt: template,
-      }
-      const toolPart: MessageV2.ToolPart = {
-        type: "tool",
-        id: Identifier.ascending("part"),
-        messageID: assistantMsg.id,
-        sessionID: input.sessionID,
-        tool: "task",
-        callID: ulid(),
-        state: {
-          status: "running",
-          time: {
-            start: Date.now(),
-          },
-          input: {
-            description: args.description,
-            subagent_type: args.subagent_type,
-            // truncate prompt to preserve context
-            prompt: args.prompt.length > 100 ? args.prompt.substring(0, 97) + "..." : args.prompt,
-          },
-        },
-      }
-      await Session.updatePart(toolPart)
-
-      const result = await TaskTool.init().then((t) =>
-        t.execute(args, {
-          sessionID: input.sessionID,
-          abort: abort.signal,
-          agent: agent.name,
-          messageID: assistantMsg.id,
-          extra: {},
-          metadata: async (metadata) => {
-            if (toolPart.state.status === "running") {
-              toolPart.state.metadata = metadata.metadata
-              toolPart.state.title = metadata.title
-              await Session.updatePart(toolPart)
-            }
-          },
         }),
       )
 
-      assistantMsg.time.completed = Date.now()
-      await Session.updateMessage(assistantMsg)
-      if (toolPart.state.status === "running") {
-        toolPart.state = {
-          status: "completed",
+      const model = await (async () => {
+        if (command.model) {
+          return Provider.parseModel(command.model)
+        }
+        if (command.agent) {
+          const cmdAgent = await Agent.get(command.agent)
+          if (cmdAgent.model) {
+            return cmdAgent.model
+          }
+        }
+        if (input.model) {
+          return Provider.parseModel(input.model)
+        }
+        return await Provider.defaultModel()
+      })()
+
+      const agent = await Agent.get(agentName)
+      if ((agent.mode === "subagent" && command.subtask !== false) || command.subtask === true) {
+        using abort = lock(input.sessionID)
+
+        const userMsg: MessageV2.User = {
+          id: Identifier.ascending("message"),
+          sessionID: input.sessionID,
           time: {
-            ...toolPart.state.time,
-            end: Date.now(),
+            created: Date.now(),
           },
-          input: toolPart.state.input,
-          title: "",
-          metadata: result.metadata,
-          output: result.output,
+          role: "user",
+        }
+        await Session.updateMessage(userMsg)
+        const userPart: MessageV2.Part = {
+          type: "text",
+          id: Identifier.ascending("part"),
+          messageID: userMsg.id,
+          sessionID: input.sessionID,
+          text: "The following tool was executed by the user",
+          synthetic: true,
+        }
+        await Session.updatePart(userPart)
+
+        const assistantMsg: MessageV2.Assistant = {
+          id: Identifier.ascending("message"),
+          sessionID: input.sessionID,
+          system: [],
+          mode: agentName,
+          cost: 0,
+          path: {
+            cwd: Instance.directory,
+            root: Instance.worktree,
+          },
+          time: {
+            created: Date.now(),
+          },
+          role: "assistant",
+          tokens: {
+            input: 0,
+            output: 0,
+            reasoning: 0,
+            cache: { read: 0, write: 0 },
+          },
+          modelID: model.modelID,
+          providerID: model.providerID,
+        }
+        await Session.updateMessage(assistantMsg)
+
+        const args = {
+          description: "Consulting " + agent.name,
+          subagent_type: agent.name,
+          prompt: template,
+        }
+        const toolPart: MessageV2.ToolPart = {
+          type: "tool",
+          id: Identifier.ascending("part"),
+          messageID: assistantMsg.id,
+          sessionID: input.sessionID,
+          tool: "task",
+          callID: ulid(),
+          state: {
+            status: "running",
+            time: {
+              start: Date.now(),
+            },
+            input: {
+              description: args.description,
+              subagent_type: args.subagent_type,
+              // truncate prompt to preserve context
+              prompt: args.prompt.length > 100 ? args.prompt.substring(0, 97) + "..." : args.prompt,
+            },
+          },
         }
         await Session.updatePart(toolPart)
+
+        try {
+          const result = await TaskTool.init().then((t) =>
+            t.execute(args, {
+              sessionID: input.sessionID,
+              abort: abort.signal,
+              agent: agent.name,
+              messageID: assistantMsg.id,
+              extra: {},
+              metadata: async (metadata) => {
+                if (toolPart.state.status === "running") {
+                  toolPart.state.metadata = metadata.metadata
+                  toolPart.state.title = metadata.title
+                  await Session.updatePart(toolPart)
+                }
+              },
+            }),
+          )
+
+          assistantMsg.time.completed = Date.now()
+          await Session.updateMessage(assistantMsg)
+          if (toolPart.state.status === "running") {
+            toolPart.state = {
+              status: "completed",
+              time: {
+                ...toolPart.state.time,
+                end: Date.now(),
+              },
+              input: toolPart.state.input,
+              title: "",
+              metadata: result.metadata,
+              output: result.output,
+            }
+            await Session.updatePart(toolPart)
+          }
+
+          return { info: assistantMsg, parts: [toolPart] }
+        } catch (error) {
+          assistantMsg.time.completed = Date.now()
+          const errorMessage = error instanceof Error ? error.message : String(error)
+          assistantMsg.error = new NamedError.Unknown({ message: errorMessage, cause: error }).toObject()
+          await Session.updateMessage(assistantMsg)
+
+          if (toolPart.state.status === "running") {
+            toolPart.state = {
+              status: "error",
+              error: errorMessage,
+              time: {
+                ...toolPart.state.time,
+                end: Date.now(),
+              },
+              input: toolPart.state.input,
+            }
+            await Session.updatePart(toolPart)
+          }
+          throw error
+        }
       }
 
-      return { info: assistantMsg, parts: [toolPart] }
+      return prompt({
+        sessionID: input.sessionID,
+        messageID: input.messageID,
+        model,
+        agent: agentName,
+        parts,
+      })
+    } catch (error) {
+      log.error("command failed", {
+        sessionID: input.sessionID,
+        command: input.command,
+        error: error instanceof Error ? error.message : String(error),
+      })
+      if (error instanceof NamedError) {
+        throw error
+      }
+      throw new NamedError.Unknown({
+        message: `/${input.command} failed: ${error instanceof Error ? error.message : String(error)}`,
+        cause: error,
+      })
     }
-
-    return prompt({
-      sessionID: input.sessionID,
-      messageID: input.messageID,
-      model,
-      agent: agentName,
-      parts,
-    })
   }
 
   async function ensureTitle(input: {
