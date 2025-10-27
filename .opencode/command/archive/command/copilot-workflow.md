@@ -1,3 +1,8 @@
+---
+description: "Copilot CLI Workflow for Zsh Configuration Management"
+agent: copilot-assistant
+---
+
 # Copilot CLI Workflow for Zsh Configuration Management
 
 ## Overview

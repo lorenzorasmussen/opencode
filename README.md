@@ -50,6 +50,8 @@ opencode --help
 - **[Agent Guidelines](./AGENTS.md)** - Agent configuration and development
 - **[Model Guide](./MODELS.md)** - Available models and pricing
 - **[Configuration](./opencode.json)** - Project configuration
+- **[MCP Usage Guide](./MCP_USAGE_GUIDE.md)** - Model Context Protocol integration
+- **[Rube Tools Reference](./RUBE_TOOLS_REFERENCE.md)** - Complete Rube MCP server toolkit reference
 
 ### Consolidated Agent and Command System
 
@@ -86,6 +88,34 @@ OpenCode uses a streamlined agent and command system optimized for efficiency:
 - **security** - Comprehensive security analysis and spec-driven documentation
 
 All commands spawn child sessions with appropriate agents and reference only the consolidated agent names.
+
+### Rube MCP Server Integration
+
+OpenCode includes comprehensive integration documentation for the Rube MCP server, providing access to 333+ tools across 14 service categories:
+
+#### Available Toolkits (14)
+- **Database & Backend**: Supabase (81 tools) - Complete database operations and management
+- **File Storage**: Google Drive (51 tools) - File operations, sharing, and collaboration
+- **Calendar**: Google Calendar (29 tools) - Event management and scheduling
+- **Memory**: Mem0 (43 tools) - Knowledge management and semantic search
+- **Platform**: Composio (21 tools) - Multi-tool orchestration and automation
+- **Messaging**: Telegram (17 tools) - Bot operations and notifications
+- **Web Automation**: Browserbase (10 tools) - Browser session management
+- **Code Execution**: CodeInterpreter (5 tools) - Sandboxed code execution
+- **AI Models**: Gemini (8 tools) - Google AI model access
+- **Multi-Model AI**: OpenRouter (7 tools) - Cross-provider AI orchestration
+- **Social Media**: LinkedIn (4 tools) - Professional networking
+- **AI Search**: PerplexityAI (1 tool) - AI-powered research and analysis
+
+#### Integration Documentation
+Each toolkit includes:
+- Complete parameter specifications and required fields
+- Authentication requirements and rate limits
+- Helper functions for common operations
+- Real-world usage examples and patterns
+- Error handling and optimization strategies
+
+**Documentation Location**: See individual integration files in the root directory (e.g., `supabase-rube-integration.md`, `googledrive-rube-integration.md`, etc.)
 
 ### Key Topics
 

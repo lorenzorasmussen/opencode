@@ -57,15 +57,12 @@ make_rpc_call \
     "Getting AI safety research information from Perplexity"
 
 echo ""
-echo "📝 NOTION SERVER - Workspace Data"
-echo "================================="
+echo "📝 NOTION VIA RUBE MCP - Workspace Data"
+echo "======================================="
 
-# Test Notion by listing databases
-make_rpc_call \
-    "npx --yes @notionhq/mcp-server-notion" \
-    "list_databases" \
-    '{}' \
-    "Listing Notion databases in workspace"
+echo "Notion access is now provided through the Rube MCP server."
+echo "Use the test-notion-page.js script to test Notion functionality."
+echo "Run: node projects/opencode/test-notion-page.js"
 
 echo ""
 echo "✅ Data retrieval demonstration complete!"

@@ -1,5 +1,6 @@
 ---
 description: Analyze test coverage
+agent: tester
 ---
 
 Here are the current test results:

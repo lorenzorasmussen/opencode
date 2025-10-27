@@ -159,9 +159,12 @@ test_server "Perplexity" \
     "npx --yes @perplexityai/mcp-server-perplexity" \
     "Test AI-powered search and answers from Perplexity"
 
-test_server "Notion" \
-    "npx --yes @notionhq/mcp-server-notion" \
-    "Test Notion workspace access - databases and pages"
+# Notion is now accessed via Rube MCP server
+echo ""
+echo "7️⃣ NOTION VIA RUBE MCP"
+echo "======================"
+echo "Notion tools are available through the Rube MCP server"
+echo "See notion-rube-integration.md for details"
 
 test_server "Memory" \
     "npx --yes @modelcontextprotocol/server-memory" \

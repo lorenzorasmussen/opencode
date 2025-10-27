@@ -1,5 +1,6 @@
 ---
 description: "Validate implementation vs spec/constitution"
+agent: reviewer
 tools:
   read: true
   grep: true

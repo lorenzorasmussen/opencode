@@ -66,11 +66,11 @@ send_request "npx --yes @perplexityai/mcp-server-perplexity" \
     "List available Perplexity tools"
 
 echo ""
-echo "7️⃣ NOTION SERVER"
-echo "================="
-send_request "npx --yes @notionhq/mcp-server-notion" \
-    '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' \
-    "List available Notion tools"
+echo "7️⃣ NOTION VIA RUBE MCP"
+echo "======================"
+echo "Notion tools are available through the Rube MCP server (Composio)"
+echo "See notion-rube-integration.md for available tools"
+echo "Test with: node projects/opencode/test-notion-page.js"
 
 echo ""
 echo "8️⃣ MEMORY SERVER"

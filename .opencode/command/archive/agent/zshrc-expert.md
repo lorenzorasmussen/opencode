@@ -1,3 +1,8 @@
+---
+description: "Zshrc Expert Guide"
+mode: zsh-configurator
+---
+
 # Zshrc Expert Guide
 
 ## Overview

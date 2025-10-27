@@ -1,5 +1,6 @@
 ---
 description: Review recent changes
+agent: reviewer
 ---
 
 Recent git commits:

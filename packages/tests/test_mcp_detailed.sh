@@ -125,12 +125,12 @@ test_server "Perplexity Server" \
     "{ name: 'ask_perplexity', arguments: { query: 'What is the capital of France?' } }" \
     "Get AI-powered answers and search results from Perplexity"
 
-# Test Notion Server
-test_server "Notion Server" \
-    "npx --yes @notionhq/mcp-server-notion" \
-    "Initialize Notion workspace access" \
-    "{ name: 'list_databases', arguments: {} }" \
-    "Access Notion databases, pages, and workspace content"
+# Notion is now accessed via Rube MCP server
+echo ""
+echo "🧪 Notion via Rube MCP"
+echo "======================"
+echo "Notion functionality is available through the Rube MCP server"
+echo "Use test-notion-page.js for testing Notion operations"
 
 # Test Memory Server
 test_server "Memory Server" \

@@ -1,5 +1,6 @@
 ---
 description: Review component
+agent: reviewer
 ---
 
 Review the component in @src/components/Button.tsx.

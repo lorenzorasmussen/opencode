@@ -1,5 +1,6 @@
 ---
 description: hello world
+agent: build
 ---
 
 hey there $ARGUMENTS
