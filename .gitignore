@@ -10,3 +10,14 @@ playground
 tmp
 dist
 .turbo
+
+# Local configurations
+.opencode/mcp.json
+
+# GitHub Actions runner
+actions-runner/
+
+# Cache directories
+caches/
+snapshot/
+var/
