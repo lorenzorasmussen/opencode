@@ -22,11 +22,7 @@ caches/
 snapshot/
 var/
 
-# Test files and directories
-test/
-tests/
-*.test.*
-*.spec.*
+# Test results and outputs
 coverage/
 .nyc_output/
 junit.xml
