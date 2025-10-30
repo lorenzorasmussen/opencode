@@ -21,3 +21,14 @@ actions-runner/
 caches/
 snapshot/
 var/
+
+# Test files and directories
+test/
+tests/
+*.test.*
+*.spec.*
+coverage/
+.nyc_output/
+junit.xml
+test-results/
+*.log
