@@ -1,0 +1,194 @@
+:root {
+  interpolate-size: allow-keywords;
+
+  [data-popper-positioner] {
+    pointer-events: none;
+  }
+
+  /* ::selection { */
+  /*   background-color: color-mix(in srgb, var(--color-primary) 33%, transparent); */
+  /*   background-color: var(--color-primary); */
+  /*   color: var(--color-background); */
+  /* } */
+
+  ::-webkit-scrollbar-track {
+    background: var(--theme-background-panel);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--theme-border-subtle);
+    border-radius: 6px;
+  }
+
+  * {
+    scrollbar-color: var(--theme-border-subtle) var(--theme-background-panel);
+  }
+}
+
+.no-scrollbar {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  & {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.scroller {
+  /* --fade-height: 1.5rem; */
+  /**/
+  /* --mask-top: linear-gradient(to bottom, transparent, black var(--fade-height)); */
+  /* --mask-bottom: linear-gradient(to top, transparent, black var(--fade-height)); */
+  /**/
+  /* mask-image: var(--mask-top), var(--mask-bottom); */
+  /* mask-repeat: no-repeat; */
+  /* mask-size: 100% var(--fade-height); */
+
+  animation: scroll-fade linear;
+  animation-timeline: scroll(self);
+}
+
+/* Define the keyframes for the mask.
+  These percentages now map to scroll positions:
+  0% = Scrolled to the top
+  100% = Scrolled to the bottom
+*/
+@keyframes scroll-fade {
+  /* At the very top (0% scroll) */
+  0% {
+    mask-image: linear-gradient(
+      to bottom,
+      black 90%,
+      /* Opaque, but start fade to bottom */ transparent 100%
+    );
+  }
+
+  /* A small amount scrolled (e.g., 5%)
+    This is where the top fade should be fully visible.
+  */
+  5% {
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 10%,
+      /* Fade-in top */ black 90%,
+      /* Fade-out bottom */ transparent 100%
+    );
+  }
+
+  /* Nearing the bottom (e.g., 95%)
+    The bottom fade should start disappearing.
+  */
+  95% {
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 10%,
+      /* Fade-in top */ black 90%,
+      /* Fade-out bottom */ transparent 100%
+    );
+  }
+
+  /* At the very bottom (100% scroll) */
+  100% {
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 10% /* Opaque, but start fade from top */
+    );
+  }
+}
+
+.truncate-start {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  direction: rtl;
+  text-align: left;
+}
+
+.text-12-regular {
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-small);
+  font-style: normal;
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-large); /* 166.667% */
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-12-medium {
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-small);
+  font-style: normal;
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-large); /* 166.667% */
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-12-mono {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-small);
+  font-style: normal;
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-large); /* 166.667% */
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-14-regular {
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-base);
+  font-style: normal;
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-x-large); /* 171.429% */
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-14-medium {
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-base);
+  font-style: normal;
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-large); /* 171.429% */
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-14-mono {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-base);
+  font-style: normal;
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-large); /* 171.429% */
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-16-medium {
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-large);
+  font-style: normal;
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-x-large); /* 150% */
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.text-20-medium {
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-x-large);
+  font-style: normal;
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-x-large); /* 120% */
+  letter-spacing: var(--letter-spacing-tightest);
+}
