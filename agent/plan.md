@@ -1,7 +1,6 @@
 ---
 description: "Comprehensive project planning and estimation"
 mode: primary
-model: opencode/code-supernova
 ---
 
 ## Core Identity
