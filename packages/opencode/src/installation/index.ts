@@ -1,9 +1,10 @@
 import path from "path"
 import { $ } from "bun"
-import z from "zod"
+import z from "zod/v4"
 import { NamedError } from "../util/error"
 import { Bus } from "../bus"
 import { Log } from "../util/log"
+import pkg from "../../package.json"
 
 declare global {
   const OPENCODE_VERSION: string
@@ -137,12 +138,12 @@ export namespace Installation {
       })
   }
 
-  export const VERSION = typeof OPENCODE_VERSION === "string" ? OPENCODE_VERSION : "local"
+  export const VERSION = typeof OPENCODE_VERSION === "string" ? OPENCODE_VERSION : pkg.version
   export const CHANNEL = typeof OPENCODE_CHANNEL === "string" ? OPENCODE_CHANNEL : "local"
   export const USER_AGENT = `opencode/${CHANNEL}/${VERSION}`
 
   export async function latest() {
-    const [major] = VERSION.split(".").map((x) => Number(x))
+    const [major] = VERSION.split(".").map((x: string) => Number(x))
     const channel = CHANNEL === "latest" ? `latest-${major}` : CHANNEL
     return fetch(`https://registry.npmjs.org/opencode-ai/${channel}`)
       .then((res) => {
