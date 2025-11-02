@@ -68,6 +68,11 @@ export const TuiCommand = cmd({
         type: "string",
         describe: "hostname to listen on",
         default: "127.0.0.1",
+      })
+      .option("acp", {
+        type: "boolean",
+        describe: "start ACP server alongside TUI for Zed integration",
+        default: process.env.OPENCODE_ACP === "true",
       }),
   handler: async (args) => {
     while (true) {
@@ -107,6 +112,13 @@ export const TuiCommand = cmd({
           port: args.port,
           hostname: args.hostname,
         })
+
+        // Start ACP server if enabled
+        if (args.acp) {
+          Log.Default.info("ACP mode enabled - Zed integration available")
+          Log.Default.info("To use with Zed, run 'opencode acp' in separate terminal")
+          Log.Default.info("Or configure Zed agent server to use: opencode acp")
+        }
 
         let cmd = [] as string[]
         const tui = Bun.embeddedFiles.find((item) => (item as File).name.includes("tui")) as File

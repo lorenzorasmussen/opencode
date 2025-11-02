@@ -171,6 +171,16 @@ export namespace Provider {
             "HTTP-Referer": "https://opencode.ai/",
             "X-Title": "opencode",
           },
+          // OpenRouter supports multiple endpoints
+          baseURL: "https://openrouter.ai/api/v1",
+          // Embeddings endpoint configuration
+          embeddings: {
+            baseURL: "https://openrouter.ai/api/v1",
+          },
+          // Reranking endpoint configuration
+          reranking: {
+            baseURL: "https://openrouter.ai/api/v1",
+          },
         },
       }
     },

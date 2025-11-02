@@ -28,7 +28,7 @@ export namespace Config {
   export const state = Instance.state(async () => {
     const auth = await Auth.all()
     let result = await global()
-    for (const file of ["opencode.jsonc", "opencode.json"]) {
+    for (const file of []) {
       const found = await Filesystem.findUp(file, Instance.directory, Instance.worktree)
       for (const resolved of found.toReversed()) {
         result = mergeDeep(result, await loadFile(resolved))
@@ -63,13 +63,13 @@ export namespace Config {
 
     const directories = [
       Global.Path.config,
-      ...(await Array.fromAsync(
-        Filesystem.up({
-          targets: [".opencode"],
-          start: Instance.directory,
-          stop: Instance.worktree,
-        }),
-      )),
+      // ...(await Array.fromAsync(
+      //   Filesystem.up({
+      //     targets: [".opencode"],
+      //     start: Instance.directory,
+      //     stop: Instance.worktree,
+      //   }),
+      // )),
     ]
 
     if (Flag.OPENCODE_CONFIG_DIR) {
@@ -168,7 +168,7 @@ export namespace Config {
     const result: Record<string, Command> = {}
     for await (const item of COMMAND_GLOB.scan({
       absolute: true,
-      followSymlinks: true,
+      followSymlinks: false,
       dot: true,
       cwd: dir,
     })) {
@@ -207,7 +207,7 @@ export namespace Config {
 
     for await (const item of AGENT_GLOB.scan({
       absolute: true,
-      followSymlinks: true,
+      followSymlinks: false,
       dot: true,
       cwd: dir,
     })) {
@@ -249,7 +249,7 @@ export namespace Config {
     const result: Record<string, Agent> = {}
     for await (const item of MODE_GLOB.scan({
       absolute: true,
-      followSymlinks: true,
+      followSymlinks: false,
       dot: true,
       cwd: dir,
     })) {
@@ -279,7 +279,7 @@ export namespace Config {
 
     for await (const item of PLUGIN_GLOB.scan({
       absolute: true,
-      followSymlinks: true,
+      followSymlinks: false,
       dot: true,
       cwd: dir,
     })) {
@@ -686,26 +686,26 @@ export namespace Config {
       {},
       mergeDeep(await loadFile(path.join(Global.Path.config, "config.json"))),
       mergeDeep(await loadFile(path.join(Global.Path.config, "opencode.json"))),
-      mergeDeep(await loadFile(path.join(Global.Path.config, "opencode.jsonc"))),
+      // mergeDeep(await loadFile(path.join(Global.Path.config, "opencode.jsonc"))),
     )
 
-    await import(path.join(Global.Path.config, "config"), {
-      with: {
-        type: "toml",
-      },
-    })
-      .then(async (mod) => {
-        const { provider, model, ...rest } = mod.default
-        if (provider && model) result.model = `${provider}/${model}`
-        result["$schema"] = "https://opencode.ai/config.json"
-        result = mergeDeep(result, rest)
-        await Bun.write(
-          path.join(Global.Path.config, "config.json"),
-          JSON.stringify(result, null, 2),
-        )
-        await fs.unlink(path.join(Global.Path.config, "config"))
-      })
-      .catch(() => {})
+    // await import(path.join(Global.Path.config, "config"), {
+    //   with: {
+    //     type: "toml",
+    //   },
+    // })
+    //   .then(async (mod) => {
+    //     const { provider, model, ...rest } = mod.default
+    //     if (provider && model) result.model = `${provider}/${model}`
+    //     result["$schema"] = "https://opencode.ai/config.json"
+    //     result = mergeDeep(result, rest)
+    //     await Bun.write(
+    //       path.join(Global.Path.config, "config.json"),
+    //       JSON.stringify(result, null, 2),
+    //     )
+    //     await fs.unlink(path.join(Global.Path.config, "config"))
+    //   })
+    //   .catch(() => {})
 
     return result
   })

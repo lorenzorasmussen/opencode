@@ -25,42 +25,47 @@ export const AcpCommand = cmd({
   },
   handler: async (opts) => {
     if (opts.cwd) process.chdir(opts["cwd"])
-    await bootstrap(process.cwd(), async () => {
-      const input = new WritableStream<Uint8Array>({
-        write(chunk) {
-          return new Promise<void>((resolve, reject) => {
-            process.stdout.write(chunk, (err) => {
-              if (err) {
-                reject(err)
-              } else {
-                resolve()
-              }
+    try {
+      await bootstrap(process.cwd(), async () => {
+        const input = new WritableStream<Uint8Array>({
+          write(chunk) {
+            return new Promise<void>((resolve, reject) => {
+              process.stdout.write(chunk, (err) => {
+                if (err) {
+                  reject(err)
+                } else {
+                  resolve()
+                }
+              })
             })
-          })
-        },
-      })
-      const output = new ReadableStream<Uint8Array>({
-        start(controller) {
-          process.stdin.on("data", (chunk: Buffer) => {
-            controller.enqueue(new Uint8Array(chunk))
-          })
-          process.stdin.on("end", () => controller.close())
-          process.stdin.on("error", (err) => controller.error(err))
-        },
-      })
+          },
+        })
+        const output = new ReadableStream<Uint8Array>({
+          start(controller) {
+            process.stdin.on("data", (chunk: Buffer) => {
+              controller.enqueue(new Uint8Array(chunk))
+            })
+            process.stdin.on("end", () => controller.close())
+            process.stdin.on("error", (err) => controller.error(err))
+          },
+        })
 
-      const stream = ndJsonStream(input, output)
+        const stream = ndJsonStream(input, output)
 
-      new AgentSideConnection((conn) => {
-        return new ACP.Agent(conn)
-      }, stream)
+        new AgentSideConnection((conn) => {
+          return new ACP.Agent(conn)
+        }, stream)
 
-      log.info("setup connection")
-      process.stdin.resume()
-      await new Promise((resolve, reject) => {
-        process.stdin.on("end", resolve)
-        process.stdin.on("error", reject)
+        log.info("setup connection")
+        process.stdin.resume()
+        await new Promise((resolve, reject) => {
+          process.stdin.on("end", resolve)
+          process.stdin.on("error", reject)
+        })
       })
-    })
+    } catch (error) {
+      log.error("bootstrap failed", { error })
+      process.exit(1)
+    }
   },
 })

@@ -5,6 +5,8 @@ import { GenerateCommand } from "./cli/cmd/generate"
 import { Log } from "./util/log"
 import { AuthCommand } from "./cli/cmd/auth"
 import { AgentCommand } from "./cli/cmd/agent"
+import { CommandCommand } from "./cli/cmd/command"
+import { InteractiveCommand } from "./cli/cmd/interactive"
 import { UpgradeCommand } from "./cli/cmd/upgrade"
 import { ModelsCommand } from "./cli/cmd/models"
 import { UI } from "./cli/ui"
@@ -15,12 +17,15 @@ import { ServeCommand } from "./cli/cmd/serve"
 import { DebugCommand } from "./cli/cmd/debug"
 import { StatsCommand } from "./cli/cmd/stats"
 import { McpCommand } from "./cli/cmd/mcp"
+import { WorkspaceCommand } from "./cli/cmd/workspace"
 import { GithubCommand } from "./cli/cmd/github"
+import { GitCommand } from "./cli/cmd/git"
 import { ExportCommand } from "./cli/cmd/export"
 import { AttachCommand } from "./cli/cmd/tui/attach"
 import { TuiThreadCommand } from "./cli/cmd/tui/thread"
 import { TuiSpawnCommand } from "./cli/cmd/tui/spawn"
 import { AcpCommand } from "./cli/cmd/acp"
+import { GlobalCommand } from "./cli/cmd/global"
 import { EOL } from "os"
 
 process.on("unhandledRejection", (e) => {
@@ -50,6 +55,11 @@ const cli = yargs(hideBin(process.argv))
     type: "string",
     choices: ["DEBUG", "INFO", "WARN", "ERROR"],
   })
+  .option("acp", {
+    describe: "start in ACP mode (Agent Client Protocol) for Zed integration",
+    type: "boolean",
+    default: process.env.OPENCODE_ACP === "true",
+  })
   .middleware(async (opts) => {
     await Log.init({
       print: process.argv.includes("--print-logs"),
@@ -71,6 +81,7 @@ const cli = yargs(hideBin(process.argv))
   .usage("\n" + UI.logo())
   .command(AcpCommand)
   .command(McpCommand)
+  .command(WorkspaceCommand)
   .command(TuiThreadCommand)
   .command(TuiSpawnCommand)
   .command(AttachCommand)
@@ -79,12 +90,16 @@ const cli = yargs(hideBin(process.argv))
   .command(DebugCommand)
   .command(AuthCommand)
   .command(AgentCommand)
+  .command(CommandCommand)
+  .command(InteractiveCommand)
   .command(UpgradeCommand)
   .command(ServeCommand)
   .command(ModelsCommand)
   .command(StatsCommand)
   .command(ExportCommand)
   .command(GithubCommand)
+  .command(GitCommand)
+  .command(GlobalCommand)
   .fail((msg) => {
     if (
       msg.startsWith("Unknown argument") ||
@@ -95,7 +110,6 @@ const cli = yargs(hideBin(process.argv))
     }
     process.exit(1)
   })
-  .strict()
 
 try {
   await cli.parse()

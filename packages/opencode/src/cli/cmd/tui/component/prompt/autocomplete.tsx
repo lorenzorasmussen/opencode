@@ -227,6 +227,21 @@ export function Autocomplete(props: {
           description: "rename session",
           onSelect: () => command.trigger("session.rename"),
         },
+        {
+          display: "/timeline",
+          description: "jump to message",
+          onSelect: () => command.trigger("session.timeline"),
+        },
+        {
+          display: "/sidebar",
+          description: "toggle sidebar",
+          onSelect: () => command.trigger("session.sidebar.toggle"),
+        },
+        {
+          display: "/conceal",
+          description: "toggle code concealment",
+          onSelect: () => command.trigger("session.toggle.conceal"),
+        },
       )
     }
     results.push(
@@ -244,6 +259,38 @@ export function Autocomplete(props: {
         display: "/agents",
         description: "list agents",
         onSelect: () => command.trigger("agent.list"),
+      },
+      {
+        display: "/create-agent",
+        description: "create a new agent with LLM assistance",
+        onSelect: () => command.trigger("agent.create"),
+      },
+      {
+        display: "/create-command",
+        description: "create a new command with LLM assistance",
+        onSelect: () => command.trigger("command.create"),
+      },
+      {
+        display: "/add-directory",
+        description: "add a directory to the project with LLM assistance",
+        onSelect: () => command.trigger("project.add_directory"),
+      },
+      {
+        display: "/add-mcp-server",
+        description: "add an MCP server with LLM assistance",
+        onSelect: () => command.trigger("mcp.add_server"),
+      },
+      {
+        display: "/agent-cycle",
+        description: "cycle to next agent",
+        disabled: true,
+        onSelect: () => command.trigger("agent.cycle"),
+      },
+      {
+        display: "/agent-cycle-reverse",
+        description: "cycle to previous agent",
+        disabled: true,
+        onSelect: () => command.trigger("agent.cycle.reverse"),
       },
       {
         display: "/session",

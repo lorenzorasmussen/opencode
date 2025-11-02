@@ -5,7 +5,7 @@ import { RouteProvider, useRoute, type Route } from "@tui/context/route"
 import { Switch, Match, createEffect, untrack, ErrorBoundary, createSignal } from "solid-js"
 import { Installation } from "@/installation"
 import { Global } from "@/global"
-import { DialogProvider, useDialog } from "@tui/ui/dialog"
+import { DialogProvider, useDialog, type DialogContext } from "@tui/ui/dialog"
 import { SDKProvider, useSDK } from "@tui/context/sdk"
 import { SyncProvider, useSync } from "@tui/context/sync"
 import { LocalProvider, useLocal } from "@tui/context/local"
@@ -16,6 +16,9 @@ import { DialogHelp } from "./ui/dialog-help"
 import { CommandProvider, useCommandDialog } from "@tui/component/dialog-command"
 import { DialogAgent } from "@tui/component/dialog-agent"
 import { DialogSessionList } from "@tui/component/dialog-session-list"
+import { CreateAgentDialog } from "./component/dialog-agent-create"
+import { ManageMcpServersDialog } from "./component/dialog-mcp-manage"
+import { AddDirectoryDialog } from "./component/dialog-directory-add"
 import { KeybindProvider } from "@tui/context/keybind"
 import { ThemeProvider, useTheme } from "@tui/context/theme"
 import { Home } from "@tui/routes/home"
@@ -100,6 +103,9 @@ function App() {
   const dimensions = useTerminalDimensions()
   const renderer = useRenderer()
   renderer.disableStdoutInterception()
+
+  // Disable mouse reporting to prevent raw mouse events from being sent as input
+  process.stdout.write("\x1b[?1000l")
   const dialog = useDialog()
   const local = useLocal()
   const kv = useKV()
@@ -111,15 +117,11 @@ function App() {
   const { theme } = useTheme()
 
   useKeyboard(async (evt) => {
-    if (evt.meta && evt.name === "t") {
-      renderer.toggleDebugOverlay()
-      return
-    }
-
-    if (evt.meta && evt.name === "d") {
-      renderer.console.toggle()
-      return
-    }
+    // Disable console toggle to prevent overlay issues
+    // if (evt.meta && evt.name === "d") {
+    //   renderer.console.toggle()
+    //   return
+    // }
   })
 
   // Make sure session is valid, otherwise redirect to home
@@ -142,6 +144,46 @@ function App() {
   })
 
   command.register(() => [
+    // Dev-only commands - only show in development mode
+    ...(Installation.isLocal() ? [
+      {
+        title: "Create agent",
+        value: "agent.create",
+        category: "Agent",
+        onSelect: (ctx: DialogContext) => {
+          ctx.replace(() => <CreateAgentDialog />)
+        },
+      },
+      {
+        title: "Create command",
+        value: "command.create",
+        category: "System",
+        onSelect: (ctx: DialogContext) => {
+          ctx.replace(() => (
+            <DialogAlert
+              title="Create Command"
+              message="Command creation is not yet implemented in the TUI.\n\nFor now, use the CLI to create custom commands:\n\nopencode command create\n\nThis will help you define new CLI commands for OpenCode."
+            />
+          ))
+        },
+      },
+      {
+        title: "Add directory",
+        value: "project.add_directory",
+        category: "Project",
+        onSelect: (ctx: DialogContext) => {
+          ctx.replace(() => <AddDirectoryDialog />)
+        },
+      },
+      {
+        title: "Manage MCP servers",
+        value: "mcp.manage",
+        category: "System",
+        onSelect: (ctx: DialogContext) => {
+          ctx.replace(() => <ManageMcpServersDialog />)
+        },
+      },
+    ] : []),
     {
       title: "Switch session",
       value: "session.list",
@@ -236,6 +278,7 @@ function App() {
       },
       category: "System",
     },
+
     {
       title: "Help",
       value: "help.show",

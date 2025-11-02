@@ -9,10 +9,12 @@
     "test": "bun test",
     "build": "./script/build.ts",
     "dev": "bun run --conditions=browser ./src/index.ts",
+    "install-dev": "bun link",
     "random": "echo 'Random script updated at $(date)'"
   },
   "bin": {
-    "opencode": "./bin/opencode"
+    "opencode": "./bin/opencode",
+    "opencode-dev": "./bin/opencode-dev"
   },
   "exports": {
     "./*": "./src/*.ts"

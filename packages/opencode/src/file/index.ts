@@ -142,7 +142,6 @@ export namespace File {
       cache = result
       fetching = false
     }
-    fn(cache)
 
     return {
       async files() {
@@ -165,7 +164,11 @@ export namespace File {
     const project = Instance.project
     if (project.vcs !== "git") return []
 
-    const diffOutput = await $`git diff --numstat HEAD`.cwd(Instance.directory).quiet().nothrow().text()
+    const diffOutput = await $`git diff --numstat HEAD`
+      .cwd(Instance.directory)
+      .quiet()
+      .nothrow()
+      .text()
 
     const changedFiles: Info[] = []
 
@@ -257,9 +260,14 @@ export namespace File {
 
     if (project.vcs === "git") {
       let diff = await $`git diff ${file}`.cwd(Instance.directory).quiet().nothrow().text()
-      if (!diff.trim()) diff = await $`git diff --staged ${file}`.cwd(Instance.directory).quiet().nothrow().text()
+      if (!diff.trim())
+        diff = await $`git diff --staged ${file}`.cwd(Instance.directory).quiet().nothrow().text()
       if (diff.trim()) {
-        const original = await $`git show HEAD:${file}`.cwd(Instance.directory).quiet().nothrow().text()
+        const original = await $`git show HEAD:${file}`
+          .cwd(Instance.directory)
+          .quiet()
+          .nothrow()
+          .text()
         const patch = structuredPatch(file, file, original, content, "old", "new", {
           context: Infinity,
           ignoreWhitespace: true,

@@ -50,8 +50,10 @@ export const { use: useKeybind, provider: KeybindProvider } = createSimpleContex
     }
 
     useKeyboard(async (evt) => {
+      // Disable leader mode by default to avoid overlay issues
       if (!store.leader && result.match("leader", evt)) {
-        leader(true)
+        // Comment out leader mode activation to prevent overlay
+        // leader(true)
         return
       }
 

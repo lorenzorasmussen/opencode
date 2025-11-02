@@ -340,7 +340,7 @@ export namespace ACP {
 
       // For now, accept any authentication attempt
       // In production, this would validate against OpenCode's auth system
-      const isValid = params.methodId === "opencode-login" || params.token !== undefined
+      const isValid = params.methodId === "opencode-login"
 
       if (!isValid) {
         throw new Error("Invalid authentication method")

@@ -29,7 +29,7 @@ describe("ACP Integration", () => {
     it("should start and respond to initialize", async () => {
       // Start ACP server
       acpProcess = spawn("bun", ["run", "opencode", "acp"], {
-        cwd: testDir,
+        cwd: process.cwd(),
         stdio: ["pipe", "pipe", "pipe"],
       })
 
@@ -67,7 +67,7 @@ describe("ACP Integration", () => {
     it("should handle new session creation", async () => {
       // Start ACP server
       acpProcess = spawn("bun", ["run", "opencode", "acp"], {
-        cwd: testDir,
+        cwd: process.cwd(),
         stdio: ["pipe", "pipe", "pipe"],
       })
 
@@ -120,7 +120,7 @@ describe("ACP Integration", () => {
   describe("Protocol Compliance", () => {
     it("should follow JSON-RPC 2.0 format", async () => {
       acpProcess = spawn("bun", ["run", "opencode", "acp"], {
-        cwd: testDir,
+        cwd: process.cwd(),
         stdio: ["pipe", "pipe", "pipe"],
       })
 
@@ -151,7 +151,7 @@ describe("ACP Integration", () => {
 
     it("should handle invalid requests gracefully", async () => {
       acpProcess = spawn("bun", ["run", "opencode", "acp"], {
-        cwd: testDir,
+        cwd: process.cwd(),
         stdio: ["pipe", "pipe", "pipe"],
       })
 

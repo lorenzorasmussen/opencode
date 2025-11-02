@@ -8,9 +8,9 @@ import { Flag } from "../flag/flag"
 
 export async function InstanceBootstrap() {
   if (Flag.OPENCODE_EXPERIMENTAL_NO_BOOTSTRAP) return
-  await Plugin.init()
-  Share.init()
-  Format.init()
+  // await Plugin.init()
+  // Share.init()
+  // Format.init()
   await LSP.init()
   FileWatcher.init()
   File.init()

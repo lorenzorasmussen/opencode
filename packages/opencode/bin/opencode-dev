@@ -1,0 +1,36 @@
+#!/bin/sh
+set -e
+
+# Get the real path of this script, resolving any symlinks
+script_path="$0"
+while [ -L "$script_path" ]; do
+    link_target="$(readlink "$script_path")"
+    case "$link_target" in
+        /*) script_path="$link_target" ;;
+        *) script_path="$(dirname "$script_path")/$link_target" ;;
+    esac
+done
+script_dir="$(dirname "$script_path")"
+script_dir="$(cd "$script_dir" && pwd)"
+
+# Find the project root (where package.json is)
+project_root="$script_dir"
+while [ "$project_root" != "/" ] && [ ! -f "$project_root/package.json" ]; do
+    project_root="$(dirname "$project_root")"
+done
+
+if [ ! -f "$project_root/package.json" ]; then
+    echo "Could not find package.json. Make sure you're running from within the OpenCode project." >&2
+    exit 1
+fi
+
+# Check if bun is available
+if ! command -v bun >/dev/null 2>&1; then
+    echo "bun is required to run the dev version. Please install bun first." >&2
+    echo "Visit: https://bun.sh" >&2
+    exit 1
+fi
+
+# Change to project root and run dev command
+cd "$project_root"
+exec bun run --conditions=browser ./src/index.ts "$@"
