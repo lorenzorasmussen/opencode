@@ -2,6 +2,7 @@ import { DialogSelect, type DialogSelectOption } from "@tui/ui/dialog-select"
 import { DialogAlert } from "@tui/ui/dialog-alert"
 import { createSignal, createResource } from "solid-js"
 import { useDialog, type DialogContext } from "@tui/ui/dialog"
+import { Keybind } from "@/util/keybind"
 
 // MCP Server Discovery
 interface DiscoveredServer {
@@ -159,6 +160,18 @@ export function AddMcpServerDialog() {
       <DialogSelect
         title="Add Stdio MCP Server"
         options={options}
+        keybind={[
+          {
+            keybind: Keybind.parse("left")[0],
+            title: "back",
+            onTrigger: () => setStep("type"),
+          },
+          {
+            keybind: Keybind.parse("backspace")[0],
+            title: "back",
+            onTrigger: () => setStep("type"),
+          },
+        ]}
       />
     )
   }
@@ -195,6 +208,18 @@ export function AddMcpServerDialog() {
             },
           },
         ]}
+        keybind={[
+          {
+            keybind: Keybind.parse("left")[0],
+            title: "back",
+            onTrigger: () => setStep("type"),
+          },
+          {
+            keybind: Keybind.parse("backspace")[0],
+            title: "back",
+            onTrigger: () => setStep("type"),
+          },
+        ]}
       />
     )
   }
@@ -204,47 +229,59 @@ export function AddMcpServerDialog() {
       <DialogSelect
         title="Add MCP Server with OpenCode"
         options={[
-           {
-             value: "json",
-             title: "Paste JSON Config",
-             description: "Paste a JSON configuration object",
-             onSelect: (ctx: DialogContext) => {
-               const message = 'To add an MCP server from JSON config, run:\n\nopencode mcp add <name> --config \'<json-string>\'\n\nExample:\nopencode mcp add my-server --config \'{"name":"my-server","type":"local","command":["python","-m","my_mcp"]}\''
-               ctx.replace(() => (
-                 <DialogAlert
-                   title="JSON Configuration"
-                   message={message}
-                 />
-               ))
-             },
-           },
-           {
-             value: "url",
-             title: "From URL",
-             description: "Provide a URL to fetch configuration",
-             onSelect: (ctx: DialogContext) => {
-               ctx.replace(() => (
-                 <DialogAlert
-                   title="URL Configuration"
-                   message="To add an MCP server from a URL, run:\n\nopencode mcp add <name> --url <config-url>\n\nThe configuration will be fetched and parsed automatically."
-                 />
-               ))
-             },
-           },
-           {
-             value: "describe",
-             title: "Describe Server",
-             description: "Describe what you want the server to do",
-             onSelect: (ctx: DialogContext) => {
-               const message = 'To describe what MCP server you want, run:\n\nopencode mcp add --describe "I want a server that can search through my code files"\n\nOpenCode will suggest and configure the appropriate server.'
-               ctx.replace(() => (
-                 <DialogAlert
-                   title="Describe MCP Server"
-                   message={message}
-                 />
-               ))
-             },
-           },
+          {
+            value: "json",
+            title: "Paste JSON Config",
+            description: "Paste a JSON configuration object",
+            onSelect: (ctx: DialogContext) => {
+              const message = 'To add an MCP server from JSON config, run:\n\nopencode mcp add <name> --config \'<json-string>\'\n\nExample:\nopencode mcp add my-server --config \'{"name":"my-server","type":"local","command":["python","-m","my_mcp"]}\''
+              ctx.replace(() => (
+                <DialogAlert
+                  title="JSON Configuration"
+                  message={message}
+                />
+              ))
+            },
+          },
+          {
+            value: "url",
+            title: "From URL",
+            description: "Provide a URL to fetch configuration",
+            onSelect: (ctx: DialogContext) => {
+              ctx.replace(() => (
+                <DialogAlert
+                  title="URL Configuration"
+                  message="To add an MCP server from a URL, run:\n\nopencode mcp add <name> --url <config-url>\n\nThe configuration will be fetched and parsed automatically."
+                />
+              ))
+            },
+          },
+          {
+            value: "describe",
+            title: "Describe Server",
+            description: "Describe what you want the server to do",
+            onSelect: (ctx: DialogContext) => {
+              const message = 'To describe what MCP server you want, run:\n\nopencode mcp add --describe "I want a server that can search through my code files"\n\nOpenCode will suggest and configure the appropriate server.'
+              ctx.replace(() => (
+                <DialogAlert
+                  title="Describe MCP Server"
+                  message={message}
+                />
+              ))
+            },
+          },
+        ]}
+        keybind={[
+          {
+            keybind: Keybind.parse("left")[0],
+            title: "back",
+            onTrigger: () => setStep("type"),
+          },
+          {
+            keybind: Keybind.parse("backspace")[0],
+            title: "back",
+            onTrigger: () => setStep("type"),
+          },
         ]}
       />
     )
