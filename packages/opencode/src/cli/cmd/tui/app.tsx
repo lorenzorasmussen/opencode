@@ -144,8 +144,8 @@ function App() {
   })
 
   command.register(() => [
-    // Dev-only commands - only show in development mode
-    ...(Installation.isLocal() ? [
+    // User management commands - available in all modes
+    ...(true ? [
       {
         title: "Create agent",
         value: "agent.create",
