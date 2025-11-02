@@ -77,30 +77,30 @@ export function AddMcpServerDialog() {
       <DialogSelect
         title="Add MCP Server"
         options={[
-          {
-            value: "stdio",
-            title: "Stdio (Local Command)",
-            description: "Run a local command via stdin/stdout",
-            onSelect: () => setStep("stdio"),
-          },
-          {
-            value: "remote",
-            title: "HTTP/SSE (Remote Server)",
-            description: "Connect to a remote MCP server",
-            onSelect: () => setStep("remote"),
-          },
-          {
-            value: "opencode",
-            title: "Add with OpenCode",
-            description: "Paste JSON config or URL for LLM-assisted setup",
-            onSelect: () => setStep("opencode"),
-          },
-          {
-            value: "help",
-            title: "Help & Examples",
-            description: "Learn more about MCP server configuration",
-            onSelect: () => setStep("help"),
-          },
+           {
+             value: "stdio",
+             title: "Stdio (Local Command)",
+             description: "Run a local command via stdin/stdout",
+             onSelect: (_ctx) => setStep("stdio"),
+           },
+           {
+             value: "remote",
+             title: "HTTP/SSE (Remote Server)",
+             description: "Connect to a remote MCP server",
+             onSelect: (_ctx) => setStep("remote"),
+           },
+           {
+             value: "opencode",
+             title: "Add with OpenCode",
+             description: "Paste JSON config or URL for LLM-assisted setup",
+             onSelect: (_ctx) => setStep("opencode"),
+           },
+           {
+             value: "help",
+             title: "Help & Examples",
+             description: "Learn more about MCP server configuration",
+             onSelect: (_ctx) => setStep("help"),
+           },
         ]}
       />
     )
