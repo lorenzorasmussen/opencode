@@ -105,12 +105,7 @@ export namespace Config {
     if (!result.username) result.username = os.userInfo().username
 
     // Handle migration from autoshare to share field
-    if (result.autoshare === true && !result.share) {
-      result.share = "auto"
-    }
-
-    // Handle migration from autoshare to share field
-    if (result.autoshare === true && !result.share) {
+    if (result.autoshare === true) {
       result.share = "auto"
     }
 

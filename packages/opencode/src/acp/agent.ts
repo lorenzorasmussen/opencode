@@ -89,7 +89,11 @@ export namespace ACP {
             })
           if (!res) return
           if (res.outcome.outcome !== "selected") {
-            Permission.respond({ sessionID: permission.sessionID, permissionID: permission.id, response: "reject" })
+            Permission.respond({
+              sessionID: permission.sessionID,
+              permissionID: permission.id,
+              response: "reject",
+            })
             return
           }
           Permission.respond({
@@ -111,9 +115,11 @@ export namespace ACP {
         const acpSession = this.sessionManager.get(part.sessionID)
         if (!acpSession) return
 
-        const message = await Storage.read<MessageV2.Info>(["message", part.sessionID, part.messageID]).catch(
-          () => undefined,
-        )
+        const message = await Storage.read<MessageV2.Info>([
+          "message",
+          part.sessionID,
+          part.messageID,
+        ]).catch(() => undefined)
         if (!message || message.role !== "assistant") return
 
         if (part.type === "tool") {
@@ -192,7 +198,9 @@ export namespace ACP {
                         sessionUpdate: "plan",
                         entries: parsedTodos.data.map((todo) => {
                           const status: PlanEntry["status"] =
-                            todo.status === "cancelled" ? "completed" : (todo.status as PlanEntry["status"])
+                            todo.status === "cancelled"
+                              ? "completed"
+                              : (todo.status as PlanEntry["status"])
                           return {
                             priority: "medium",
                             status,
@@ -327,8 +335,23 @@ export namespace ACP {
       }
     }
 
-    async authenticate(_params: AuthenticateRequest) {
-      throw new Error("Authentication not implemented")
+    async authenticate(params: AuthenticateRequest) {
+      log.info("authenticate", { methodId: params.methodId })
+
+      // For now, accept any authentication attempt
+      // In production, this would validate against OpenCode's auth system
+      const isValid = params.methodId === "opencode-login" || params.token !== undefined
+
+      if (!isValid) {
+        throw new Error("Invalid authentication method")
+      }
+
+      return {
+        _meta: {
+          user: "authenticated-user", // Would be actual user info
+          permissions: ["read", "write", "execute"],
+        },
+      }
     }
 
     async newSession(params: NewSessionRequest) {
@@ -404,7 +427,8 @@ export namespace ACP {
           description: agent.description,
         }))
 
-      const currentModeId = availableModes.find((m) => m.name === "build")?.id ?? availableModes[0].id
+      const currentModeId =
+        availableModes.find((m) => m.name === "build")?.id ?? availableModes[0].id
 
       const mcpServers: Record<string, Config.Mcp> = {}
       for (const server of params.mcpServers) {
@@ -665,7 +689,9 @@ export namespace ACP {
 
   function parseUri(
     uri: string,
-  ): { type: "file"; url: string; filename: string; mime: string } | { type: "text"; text: string } {
+  ):
+    | { type: "file"; url: string; filename: string; mime: string }
+    | { type: "text"; text: string } {
     try {
       if (uri.startsWith("file://")) {
         const path = uri.slice(7)

@@ -57,7 +57,7 @@ export namespace Snapshot {
         .split("\n")
         .map((x) => x.trim())
         .filter(Boolean)
-        .map((x) => path.join(Instance.worktree, x).replace(/^\/private\//, "/")),
+        .map((x) => path.join(Instance.worktree, x)),
     }
   }
 

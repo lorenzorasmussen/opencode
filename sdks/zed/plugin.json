@@ -1,0 +1,19 @@
+{
+  "name": "zed-acp",
+  "version": "0.1.0",
+  "description": "OpenCode ACP integration for Zed",
+  "authors": ["OpenCode Team"],
+  "languages": [],
+  "grammars": [],
+  "themes": [],
+  "keymaps": ["keymap.json"],
+  "settings": ["settings.json"],
+  "commands": {
+    "agent:toggle-panel": "Toggle agent panel",
+    "agent:new-session": "Create new agent session",
+    "agent:submit-prompt": "Submit prompt to agent",
+    "agent:cancel-prompt": "Cancel current prompt",
+    "agent:clear-history": "Clear conversation history",
+    "agent:export-session": "Export session to file"
+  }
+}

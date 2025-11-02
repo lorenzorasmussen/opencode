@@ -321,6 +321,12 @@ Test agent prompt`,
         name: "test",
         model: "test/model",
         prompt: "Test agent prompt",
+        description: "test specialist",
+        mode: "subagent",
+        tools: {
+          todoread: true,
+          todowrite: true,
+        },
       })
     },
   })

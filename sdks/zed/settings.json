@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Zed ACP Settings",
+  "description": "Configuration for OpenCode ACP integration",
+  "type": "object",
+  "properties": {
+    "agent_servers": {
+      "type": "object",
+      "description": "Configuration for agent servers",
+      "patternProperties": {
+        ".*": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "string",
+              "description": "Command to run the agent server"
+            },
+            "args": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Arguments to pass to the command"
+            },
+            "env": {
+              "type": "object",
+              "patternProperties": {
+                ".*": { "type": "string" }
+              },
+              "description": "Environment variables"
+            }
+          },
+          "required": ["command"]
+        }
+      }
+    },
+    "agent": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable agent integration"
+        },
+        "default_server": {
+          "type": "string",
+          "description": "Default agent server to use"
+        },
+        "auto_start": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically start agent on Zed startup"
+        },
+        "streaming": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable streaming responses"
+        },
+        "max_history": {
+          "type": "integer",
+          "default": 100,
+          "minimum": 1,
+          "maximum": 1000,
+          "description": "Maximum messages to keep in history"
+        }
+      }
+    },
+    "ui": {
+      "type": "object",
+      "properties": {
+        "panel_position": {
+          "type": "string",
+          "enum": ["left", "right", "bottom"],
+          "default": "right",
+          "description": "Position of the agent panel"
+        },
+        "panel_width": {
+          "type": "integer",
+          "default": 400,
+          "minimum": 200,
+          "maximum": 800,
+          "description": "Width of the agent panel in pixels"
+        },
+        "font_size": {
+          "type": "number",
+          "default": 12,
+          "minimum": 8,
+          "maximum": 24,
+          "description": "Font size for agent messages"
+        },
+        "theme": {
+          "type": "string",
+          "enum": ["auto", "light", "dark"],
+          "default": "auto",
+          "description": "Theme for agent UI"
+        }
+      }
+    },
+    "performance": {
+      "type": "object",
+      "properties": {
+        "max_concurrent_requests": {
+          "type": "integer",
+          "default": 3,
+          "minimum": 1,
+          "maximum": 10,
+          "description": "Maximum concurrent requests to agent"
+        },
+        "request_timeout": {
+          "type": "integer",
+          "default": 30000,
+          "minimum": 5000,
+          "maximum": 120000,
+          "description": "Request timeout in milliseconds"
+        },
+        "cache_size": {
+          "type": "integer",
+          "default": 50,
+          "minimum": 10,
+          "maximum": 500,
+          "description": "Size of response cache"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "bindings": {
+      "ctrl-alt-o": "agent:toggle-panel",
+      "ctrl-alt-n": "agent:new-session",
+      "ctrl-enter": "agent:submit-prompt",
+      "ctrl-alt-c": "agent:cancel-prompt",
+      "ctrl-alt-x": "agent:clear-history",
+      "ctrl-alt-e": "agent:export-session"
+    }
+  }
+]
