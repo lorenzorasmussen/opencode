@@ -1,7 +1,6 @@
 ---
 description: "Comprehensive debugging and defect resolution"
 mode: subagent
-model: opencode/code-supernova
 ---
 
 ```

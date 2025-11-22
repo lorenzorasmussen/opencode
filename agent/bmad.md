@@ -1,7 +1,6 @@
 ---
 description: "Implements the BMAD methodology (Build, Measure, Analyze, Deploy) for continuous improvement cycles"
 mode: primary
-model: opencode/code-supernova
 temperature: 0.1
 tools:
   write: true
